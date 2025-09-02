@@ -1,0 +1,2709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Balloon Trouble</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(to bottom, #87CEEB, #98FB98);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+        
+        .game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            max-width: 1200px;
+            max-height: 800px;
+            background: linear-gradient(to bottom, #87CEEB 60%, #4A6741 60%);
+            overflow: hidden;
+            cursor: crosshair;
+        }
+        
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        
+        .ui {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: white;
+            font-size: 18px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
+            z-index: 100;
+            pointer-events: none;
+        }
+        
+        .ui-right {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            color: white;
+            font-size: 18px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
+            z-index: 100;
+            text-align: right;
+            pointer-events: none;
+        }
+        
+        .game-buttons {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            align-items: flex-start;
+        }
+        
+        .game-buttons button {
+            padding: 10px 15px;
+            font-size: 14px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            border: 2px solid white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            min-width: 100px;
+        }
+        
+        .game-buttons button:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateX(5px);
+        }
+        
+        .difficulty-menu {
+            position: absolute;
+            bottom: 150px;
+            left: 140px;
+            background: rgba(0,0,0,0.9);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            z-index: 200;
+            display: none;
+        }
+        
+        .difficulty-menu button {
+            display: block;
+            width: 150px;
+            margin: 5px 0;
+            padding: 10px;
+            font-size: 14px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        .difficulty-menu button:hover {
+            background: #45a049;
+        }
+        
+        .difficulty-menu button.selected {
+            background: #2196F3;
+        }
+        
+        .difficulty-popup {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 15px;
+            text-align: center;
+            z-index: 300;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border: 2px solid rgba(255,255,255,0.3);
+            width: 500px;
+            max-width: 90vw;
+        }
+        
+        .difficulty-popup h2 {
+            font-size: clamp(1.5em, 4vw, 2em);
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        
+        .difficulty-popup p {
+            margin-bottom: 30px;
+            font-size: clamp(0.9em, 2.5vw, 1.1em);
+            opacity: 0.9;
+        }
+        
+        .difficulty-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .difficulty-btn {
+            padding: clamp(12px, 2vw, 15px) clamp(20px, 3vw, 25px);
+            font-size: clamp(14px, 2.5vw, 16px);
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid rgba(255,255,255,0.5);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            backdrop-filter: blur(10px);
+            min-width: 120px;
+        }
+        
+        .difficulty-btn:hover {
+            background: rgba(255,255,255,0.3);
+            border-color: rgba(255,255,255,0.8);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        
+        @media (max-width: 600px) {
+            .difficulty-popup {
+                padding: 30px 20px;
+                width: 95vw;
+            }
+            
+            .difficulty-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .difficulty-btn {
+                width: 80%;
+                max-width: 200px;
+            }
+        }
+        
+        @media (max-height: 500px) {
+            .difficulty-popup {
+                padding: 20px 30px;
+            }
+            
+            .difficulty-popup h2 {
+                margin-bottom: 5px;
+            }
+            
+            .difficulty-popup p {
+                margin-bottom: 15px;
+            }
+        }
+        
+        .shop {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.9);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            z-index: 200;
+            display: none;
+            max-width: 90vw;
+            width: 400px;
+        }
+        
+        .shop h2 {
+            margin: 0 0 10px 0;
+            font-size: 24px;
+        }
+        
+        .shop-coins {
+            margin: 0 0 15px 0;
+            font-size: 18px;
+            color: #FFD700;
+        }
+        
+        .shop-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .shop button {
+            padding: 12px 8px;
+            font-size: 14px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s;
+            min-height: 60px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            line-height: 1.3;
+        }
+        
+        .shop button:hover {
+            background: #45a049;
+        }
+        
+        .shop button:disabled {
+            background: #666;
+            cursor: not-allowed;
+        }
+        
+        .shop-continue {
+            width: 100%;
+            padding: 15px;
+            font-size: 16px;
+            background: #2196F3;
+            margin-top: 5px;
+        }
+        
+        .shop-continue:hover {
+            background: #1976D2;
+        }
+        
+        @media (max-width: 480px) {
+            .shop {
+                width: 95vw;
+                padding: 15px;
+            }
+            
+            .shop h2 {
+                font-size: 20px;
+            }
+            
+            .shop button {
+                font-size: 12px;
+                padding: 10px 5px;
+                min-height: 55px;
+            }
+        }
+        
+        .game-over {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.9);
+            color: white;
+            padding: 40px;
+            border-radius: 15px;
+            text-align: center;
+            z-index: 200;
+            display: none;
+        }
+        
+        .restart-btn {
+            margin-top: 20px;
+            padding: 15px 30px;
+            font-size: 18px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        
+        .crosshair {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            pointer-events: none;
+            z-index: 150;
+            display: none;
+        }
+        
+        .crosshair::before,
+        .crosshair::after {
+            content: '';
+            position: absolute;
+            background: rgba(255, 0, 0, 0.8);
+        }
+        
+        .crosshair::before {
+            width: 2px;
+            height: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        
+        .crosshair::after {
+            height: 2px;
+            width: 30px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+    </style>
+    <script src="index.js"></script> 
+</head>
+<body>
+    <div class="game-container" id="gameContainer">
+        <canvas id="gameCanvas"></canvas>
+        <div class="crosshair" id="crosshair"></div>
+        
+        <div class="difficulty-popup" id="difficultyPopup">
+            <h2>Balloon Trouble!</h2>
+            <p>Select your preferred difficulty level to start the game.</p>
+            <div class="difficulty-buttons">
+                <button class="difficulty-btn" id="easyStart">Easy</button>
+                <button class="difficulty-btn" id="normalStart">Normal</button>
+                <button class="difficulty-btn" id="hardStart">Hard</button>
+            </div>
+            <div>If you enjoy this game, please consider a donation - it helps a lot! ❤️</div>
+			<div id="donate-button-container">
+				<div id="donate-button"></div>
+				<script src="https://www.paypalobjects.com/donate/sdk/donate-sdk.js" charset="UTF-8"></script>
+				<script>
+				PayPal.Donation.Button({
+				env:'production',
+				hosted_button_id:'Y2YR4AC4GZ8MW',
+				image: {
+				src:'https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif',
+				alt:'Donate with PayPal button',
+				title:'PayPal - The safer, easier way to pay online!',
+				}
+				}).render('#donate-button');
+				</script>
+			</div>
+        </div>
+        
+        <div class="ui">
+            <div>Coins: <span id="coins">0</span></div>
+            <div>House HP: <span id="houseHP">100</span></div>
+            <div>Wave: <span id="wave">1</span></div>
+            <div>Enemies Left: <span id="enemiesLeft">5</span></div>
+        </div>
+        
+        <div class="ui-right">
+            <div>Gun Level: <span id="gunLevel">1</span></div>
+            <div>Turrets: <span id="turretInfo">None</span></div>
+            <div>Difficulty: <span id="currentDifficulty">Normal</span></div>
+            <div>Balloon Strength: <span id="balloonStrength">1</span></div>
+        </div>
+        
+        <div class="game-buttons">
+            <button id="pauseBtn">Pause</button>
+            <button id="difficultyBtn">Difficulty</button>
+            <!-- <button id="donateBtn">Donate ❤️</button> -->
+        </div>
+        
+        <div class="difficulty-menu" id="difficultyMenu">
+            <h3>Choose Difficulty</h3>
+            <button id="easyBtn">Easy</button>
+            <button id="normalBtn" class="selected">Normal</button>
+            <button id="hardBtn">Hard</button>
+            <button id="closeDifficultyBtn">Close</button>
+        </div>
+        
+        <div class="shop" id="shop">
+            <h2>Upgrade Shop</h2>
+            <p class="shop-coins">Coins: <span id="shopCoins">0</span></p>
+            <div class="shop-grid">
+                <button id="upgradeGun">
+                    <span>Upgrade Gun</span>
+                    <span>Cost: <span id="gunCost">50</span></span>
+                </button>
+                <button id="reinforceHouse">
+                    <span>Reinforce House</span>
+                    <span>Cost: <span id="houseCost">30</span></span>
+                </button>
+                <button id="buyTurret">
+                    <span>Buy Turret</span>
+                    <span>Cost: <span id="turretCost">100</span></span>
+                </button>
+                <button id="repairHouse">
+                    <span>Repair House</span>
+                    <span>Cost: <span id="repairCost">20</span></span>
+                </button>
+            </div>
+            <button id="closeShop" class="shop-continue">Next Level</button>
+        </div>
+        
+        <div class="game-over" id="gameOver">
+            <h2>Game Over!</h2>
+            <p>Final Coins: <span id="finalCoins">0</span></p>
+            <p>Waves Survived: <span id="finalWave">0</span></p>
+            <button class="restart-btn" id="restartBtn">Play Again</button>
+        </div>
+    </div>
+    <script>
+        let selectedDifficulty = 'normal';
+        let game;
+        
+        // Set up startup popup event listeners immediately
+        document.getElementById('easyStart').addEventListener('click', () => startGame('easy'));
+        document.getElementById('normalStart').addEventListener('click', () => startGame('normal'));
+        document.getElementById('hardStart').addEventListener('click', () => startGame('hard'));
+        document.getElementById('restartBtn').addEventListener('click', showStartupPopup);
+        
+        function startGame(difficulty) {
+            selectedDifficulty = difficulty;
+            document.getElementById('currentDifficulty').textContent = 
+                difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
+            document.getElementById('difficultyPopup').style.display = 'none';
+            game = new Game();
+        }
+        
+        function showStartupPopup() {
+            document.getElementById('gameOver').style.display = 'none';
+            document.getElementById('shop').style.display = 'none';
+            document.getElementById('difficultyMenu').style.display = 'none';
+            document.getElementById('difficultyPopup').style.display = 'block';
+        }
+
+        class Game {
+            constructor() {
+                this.canvas = document.getElementById('gameCanvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.gameContainer = document.getElementById('gameContainer');
+                
+                this.resizeCanvas();
+                window.addEventListener('resize', () => this.resizeCanvas());
+                
+                this.init();
+                this.setupEventListeners();
+                this.gameLoop();
+            }
+            
+            resizeCanvas() {
+                const rect = this.gameContainer.getBoundingClientRect();
+                this.canvas.width = rect.width;
+                this.canvas.height = rect.height;
+                this.width = this.canvas.width;
+                this.height = this.canvas.height;
+            }
+            
+            init() {
+                this.coins = 0;
+                this.wave = 1;
+                this.houseHP = 25;
+                this.maxHouseHP = 25;
+                this.gameRunning = true;
+                this.waveActive = false;
+                this.paused = false;
+                this.difficulty = selectedDifficulty;
+                this.placingTurret = false;
+                
+                this.player = {
+                    x: this.width * 0.14,
+                    y: this.height * 0.5,
+                    gunLevel: 1,
+                    gunDamage: 1,
+                    fireRate: 300,
+                    lastShot: 0,
+                    size: 20
+                };
+                
+                this.house = {
+                    x: this.width * 0.05,
+                    y: this.height * 0.55,
+                    width: this.width * 0.18,
+                    height: this.height * 0.45,
+                    armor: 0
+                };
+                
+                this.wall = {
+                    x: this.house.x + this.house.width + 15,
+                    y: this.height * 0.70,  // Moved up to accommodate 20% height increase
+                    width: 25,
+                    height: this.height * 0.30  // Increased by 20% (from 0.25 to 0.30)
+                };
+                
+                this.balloons = [];
+                this.bullets = [];
+                this.turrets = [];
+                this.particles = [];
+                this.coinParticles = [];
+                
+                this.generateRandomVegetation();
+                
+                this.enemiesInWave = this.getEnemiesPerWave();
+                this.enemiesSpawned = 0;
+                this.lastSpawn = 0;
+                this.spawnRate = this.getSpawnRate();
+                
+                this.upgradeCosts = {
+                    gun: 50,
+                    house: 30,
+                    turret: 75,
+                    repair: 20
+                };
+                
+                this.startWave();
+            }
+            
+            generateRandomVegetation() {
+                this.treePositions = [];
+                const numTrees = 2 + Math.floor(Math.random() * 3);
+                
+                for (let i = 0; i < numTrees; i++) {
+                    const x = this.width * (0.5 + Math.random() * 0.45);
+                    const y = this.height * (0.6 + Math.random() * 0.25);
+                    this.treePositions.push({ x, y });
+                }
+                
+                this.bushPositions = [];
+                const numBushes = 3 + Math.floor(Math.random() * 4);
+                
+                for (let i = 0; i < numBushes; i++) {
+                    const x = this.width * (0.4 + Math.random() * 0.55);
+                    const y = this.height * (0.8 + Math.random() * 0.15);
+                    this.bushPositions.push({ x, y });
+                }
+            }
+            
+            // Helper function to darken a color
+            darkenColor(color, factor) {
+                // Convert hex to RGB if needed
+                let r, g, b;
+                if (color.startsWith('#')) {
+                    const hex = color.slice(1);
+                    r = parseInt(hex.substr(0, 2), 16);
+                    g = parseInt(hex.substr(2, 2), 16);
+                    b = parseInt(hex.substr(4, 2), 16);
+                } else if (color.startsWith('rgb')) {
+                    const match = color.match(/\d+/g);
+                    r = parseInt(match[0]);
+                    g = parseInt(match[1]);
+                    b = parseInt(match[2]);
+                } else {
+                    // Handle named colors
+                    const namedColors = {
+                        '#FF6B6B': [255, 107, 107],
+                        '#4ECDC4': [78, 205, 196],
+                        '#45B7D1': [69, 183, 209],
+                        '#9B59B6': [155, 89, 182],
+                        '#F39C12': [243, 156, 18]
+                    };
+                    if (namedColors[color]) {
+                        [r, g, b] = namedColors[color];
+                    } else {
+                        return color; // Fallback to original color
+                    }
+                }
+                
+                // Darken the color
+                r = Math.floor(r * (1 - factor));
+                g = Math.floor(g * (1 - factor));
+                b = Math.floor(b * (1 - factor));
+                
+                return `rgb(${r}, ${g}, ${b})`;
+            }
+            
+            // Helper function to lighten a color
+            lightenColor(color, factor) {
+                // Convert hex to RGB if needed
+                let r, g, b;
+                if (color.startsWith('#')) {
+                    const hex = color.slice(1);
+                    r = parseInt(hex.substr(0, 2), 16);
+                    g = parseInt(hex.substr(2, 2), 16);
+                    b = parseInt(hex.substr(4, 2), 16);
+                } else if (color.startsWith('rgb')) {
+                    const match = color.match(/\d+/g);
+                    r = parseInt(match[0]);
+                    g = parseInt(match[1]);
+                    b = parseInt(match[2]);
+                } else {
+                    // Handle named colors
+                    const namedColors = {
+                        '#FF6B6B': [255, 107, 107],
+                        '#4ECDC4': [78, 205, 196],
+                        '#45B7D1': [69, 183, 209],
+                        '#9B59B6': [155, 89, 182],
+                        '#F39C12': [243, 156, 18]
+                    };
+                    if (namedColors[color]) {
+                        [r, g, b] = namedColors[color];
+                    } else {
+                        return color; // Fallback to original color
+                    }
+                }
+                
+                // Lighten the color
+                r = Math.min(255, Math.floor(r + (255 - r) * factor));
+                g = Math.min(255, Math.floor(g + (255 - g) * factor));
+                b = Math.min(255, Math.floor(b + (255 - b) * factor));
+                
+                return `rgb(${r}, ${g}, ${b})`;
+            }
+            
+            setupEventListeners() {
+                this.canvas.addEventListener('click', (e) => this.handleClick(e));
+                this.canvas.addEventListener('touchstart', (e) => this.handleTouch(e));
+                this.canvas.addEventListener('mousemove', (e) => this.handleMouseMove(e));
+                
+                document.getElementById('upgradeGun').addEventListener('click', () => this.upgradeGun());
+                document.getElementById('reinforceHouse').addEventListener('click', () => this.reinforceHouse());
+                document.getElementById('buyTurret').addEventListener('click', () => this.buyTurret());
+                document.getElementById('repairHouse').addEventListener('click', () => this.repairHouse());
+                document.getElementById('closeShop').addEventListener('click', () => this.closeShop());
+                
+                document.getElementById('pauseBtn').addEventListener('click', () => this.togglePause());
+                document.getElementById('difficultyBtn').addEventListener('click', () => this.showDifficultyMenu());
+                // document.getElementById('donateBtn').addEventListener('click', () => this.showDonateMessage());
+                
+                document.getElementById('easyBtn').addEventListener('click', () => this.setDifficulty('easy'));
+                document.getElementById('normalBtn').addEventListener('click', () => this.setDifficulty('normal'));
+                document.getElementById('hardBtn').addEventListener('click', () => this.setDifficulty('hard'));
+                document.getElementById('closeDifficultyBtn').addEventListener('click', () => this.hideDifficultyMenu());
+            }
+            
+            handleClick(e) {
+                if (!this.gameRunning || this.paused) return;
+                
+                const rect = this.canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                if (this.placingTurret) {
+                    this.placeTurret(x, y);
+                } else {
+                    this.shoot(x, y);
+                }
+            }
+            
+            handleTouch(e) {
+                e.preventDefault();
+                if (!this.gameRunning || this.paused) return;
+                
+                const rect = this.canvas.getBoundingClientRect();
+                const touch = e.touches[0];
+                const x = touch.clientX - rect.left;
+                const y = touch.clientY - rect.top;
+                
+                if (this.placingTurret) {
+                    this.placeTurret(x, y);
+                } else {
+                    this.shoot(x, y);
+                }
+            }
+            
+            handleMouseMove(e) {
+                const crosshair = document.getElementById('crosshair');
+                const rect = this.canvas.getBoundingClientRect();
+                crosshair.style.display = 'block';
+                crosshair.style.left = (e.clientX - rect.left - 15) + 'px';
+                crosshair.style.top = (e.clientY - rect.top - 15) + 'px';
+                
+                this.mouseX = e.clientX - rect.left;
+                this.mouseY = e.clientY - rect.top;
+            }
+            
+            shoot(targetX, targetY) {
+                const now = Date.now();
+                if (now - this.player.lastShot < this.player.fireRate) return;
+                
+                const dx = targetX - this.player.x;
+                const dy = targetY - this.player.y;
+                const angle = Math.atan2(dy, dx);
+                
+                this.bullets.push({
+                    x: this.player.x,
+                    y: this.player.y,
+                    vx: Math.cos(angle) * 16,
+                    vy: Math.sin(angle) * 16,
+                    damage: this.player.gunDamage
+                });
+                
+                this.player.lastShot = now;
+                
+                for (let i = 0; i < 5; i++) {
+                    this.particles.push({
+                        x: this.player.x,
+                        y: this.player.y,
+                        vx: (Math.random() - 0.5) * 4,
+                        vy: (Math.random() - 0.5) * 4,
+                        life: 10,
+                        color: `hsl(${Math.random() * 60 + 10}, 100%, 60%)`
+                    });
+                }
+            }
+            
+            startWave() {
+                this.waveActive = true;
+                this.enemiesSpawned = 0;
+                this.enemiesInWave = this.getEnemiesPerWave();
+                this.spawnRate = this.getSpawnRate();
+                this.lastSpawn = Date.now();
+                
+                document.getElementById('enemiesLeft').textContent = this.enemiesInWave;
+            }
+            
+            getEnemiesPerWave() {
+                const baseEnemies = 5 + this.wave * 2;
+                switch (this.difficulty) {
+                    case 'easy': return Math.max(3, Math.floor(baseEnemies * 0.7));
+                    case 'normal': return baseEnemies;
+                    case 'hard': return Math.floor(baseEnemies * 1.5);
+                    default: return baseEnemies;
+                }
+            }
+            
+            getSpawnRate() {
+                const baseRate = Math.max(800, 2000 - this.wave * 100);
+                switch (this.difficulty) {
+                    case 'easy': return baseRate * 1.3;
+                    case 'normal': return baseRate;
+                    case 'hard': return baseRate * 0.6;
+                    default: return baseRate;
+                }
+            }
+            
+            spawnBalloon() {
+                if (this.enemiesSpawned >= this.enemiesInWave) return;
+                
+                const types = ['basic', 'armored', 'heavy', 'giant', 'speed', 'superarmored', 'stealth'];
+                let weights;
+                
+                switch (this.difficulty) {
+                    case 'easy': weights = [0.6, 0.2, 0.1, 0.05, 0.05, 0, 0]; break;
+                    case 'normal': weights = [0.4, 0.2, 0.15, 0.1, 0.1, 0.03, 0.02]; break;
+                    case 'hard': weights = [0.2, 0.15, 0.2, 0.15, 0.1, 0.1, 0.1]; break;
+                    default: weights = [0.4, 0.2, 0.15, 0.1, 0.1, 0.03, 0.02];
+                }
+                
+                if (this.wave >= 3) {
+                    weights[3] += 0.05;
+                    weights[0] -= 0.05;
+                    // Start spawning super armored balloons
+                    if (weights[5] === 0) weights[5] = 0.05;
+                }
+                if (this.wave >= 5) {
+                    weights[4] += 0.1;
+                    weights[0] -= 0.1;
+                    // Increase super armored and stealth spawns
+                    weights[5] += 0.05;
+                    weights[6] += 0.05;
+                    weights[1] -= 0.05;
+                }
+                
+                let type = 'basic';
+                const rand = Math.random();
+                let cumulative = 0;
+                for (let i = 0; i < types.length; i++) {
+                    cumulative += weights[i];
+                    if (rand <= cumulative) {
+                        type = types[i];
+                        break;
+                    }
+                }
+                
+                let hp, points, color, size, speed;
+                switch (type) {
+                    case 'basic': hp = 1; points = 1; color = '#FF6B6B'; size = 30; speed = 1; break;
+                    case 'armored': hp = 2; points = 2; color = '#4ECDC4'; size = 35; speed = 0.8; break;
+                    case 'heavy': hp = 3; points = 3; color = '#45B7D1'; size = 40; speed = 0.6; break;
+                    case 'giant': hp = 5; points = 5; color = '#9B59B6'; size = 55; speed = 0.4; break;
+                    case 'speed': hp = 1; points = 3; color = '#F39C12'; size = 25; speed = 2; break;
+                    case 'superarmored': hp = 4; points = 4; color = '#2C3E50'; size = 38; speed = 1.2; break;
+                    case 'stealth': hp = 2; points = 4; color = '#95A5A6'; size = 28; speed = 1.5; break;
+                }
+                
+                let difficultyMultiplier = 1;
+                switch (this.difficulty) {
+                    case 'easy': difficultyMultiplier = 0.8; break;
+                    case 'normal': difficultyMultiplier = 1; break;
+                    case 'hard': 
+                        difficultyMultiplier = 1.2;
+                        if (Math.random() < 0.3) difficultyMultiplier *= 1.5;
+                        break;
+                }
+                
+                const finalSpeed = speed * difficultyMultiplier;
+                
+                // Calculate balloon strength multiplier based on wave (doubles every 10 waves)
+                const balloonStrength = 1 + Math.floor(this.wave / 10);
+                const finalHP = hp * balloonStrength;
+                
+                this.balloons.push({
+                    x: this.width + 50,
+                    y: Math.random() * (this.height * 0.6) + 50,
+                    vx: -(finalSpeed + this.wave * 0.2 + Math.random() * 0.5),
+                    vy: (Math.random() - 0.5) * 0.5,
+                    hp: finalHP, maxHP: finalHP, points, color, size, type,
+                    speed: finalSpeed,
+                    hasSpeedBoost: difficultyMultiplier > 1.2
+                });
+                
+                this.enemiesSpawned++;
+            }
+            
+            update() {
+                if (!this.gameRunning || this.paused) return;
+                
+                const now = Date.now();
+                
+                if (this.waveActive && now - this.lastSpawn > this.spawnRate) {
+                    this.spawnBalloon();
+                    this.lastSpawn = now;
+                }
+                
+                for (let i = this.balloons.length - 1; i >= 0; i--) {
+                    const balloon = this.balloons[i];
+                    balloon.x += balloon.vx;
+                    balloon.y += balloon.vy;
+                    
+                    if (balloon.y <= 0 || balloon.y >= this.height * 0.6) {
+                        balloon.vy *= -1;
+                    }
+                    
+                    if (balloon.x <= this.wall.x + this.wall.width + balloon.size) {
+                        this.houseHP -= Math.max(1, balloon.points - this.house.armor);
+                        this.balloons.splice(i, 1);
+                        
+                        for (let j = 0; j < 10; j++) {
+                            this.particles.push({
+                                x: this.wall.x + this.wall.width,
+                                y: this.wall.y + this.wall.height * 0.5,
+                                vx: (Math.random() - 0.5) * 6,
+                                vy: (Math.random() - 0.5) * 6,
+                                life: 20,
+                                color: '#8B4513'
+                            });
+                        }
+                        
+                        if (this.houseHP <= 0) {
+                            this.gameOver();
+                            return;
+                        }
+                        continue;
+                    }
+                }
+                
+                for (let i = this.bullets.length - 1; i >= 0; i--) {
+                    const bullet = this.bullets[i];
+                    bullet.x += bullet.vx;
+                    bullet.y += bullet.vy;
+                    
+                    if (bullet.x > this.width || bullet.x < 0 || bullet.y > this.height || bullet.y < 0) {
+                        this.bullets.splice(i, 1);
+                        continue;
+                    }
+                    
+                    for (let j = this.balloons.length - 1; j >= 0; j--) {
+                        const balloon = this.balloons[j];
+                        const dx = bullet.x - balloon.x;
+                        const dy = bullet.y - balloon.y;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+                        
+                        if (distance < balloon.size) {
+                            balloon.hp -= bullet.damage;
+                            this.bullets.splice(i, 1);
+                            
+                            for (let k = 0; k < 8; k++) {
+                                this.particles.push({
+                                    x: balloon.x, y: balloon.y,
+                                    vx: (Math.random() - 0.5) * 4,
+                                    vy: (Math.random() - 0.5) * 4,
+                                    life: 15, color: balloon.color
+                                });
+                            }
+                            
+                            if (balloon.hp <= 0) {
+                                this.coins += balloon.points;
+                                
+                                for (let k = 0; k < balloon.points * 2; k++) {
+                                    this.coinParticles.push({
+                                        x: balloon.x, y: balloon.y,
+                                        vx: (Math.random() - 0.5) * 6,
+                                        vy: (Math.random() - 0.5) * 6 - 2,
+                                        life: 40, value: 1, gravity: 0.1
+                                    });
+                                }
+                                
+                                this.balloons.splice(j, 1);
+                                
+                                for (let k = 0; k < 15; k++) {
+                                    this.particles.push({
+                                        x: balloon.x, y: balloon.y,
+                                        vx: (Math.random() - 0.5) * 8,
+                                        vy: (Math.random() - 0.5) * 8,
+                                        life: 25, color: balloon.color
+                                    });
+                                }
+                            }
+                            break;
+                        }
+                    }
+                }
+                
+                for (const turret of this.turrets) {
+                    if (now - turret.lastShot > turret.fireRate) {
+                        const nearestBalloon = this.findNearestBalloon(turret.x, turret.y);
+                        if (nearestBalloon) {
+                            const dx = nearestBalloon.x - turret.x;
+                            const dy = nearestBalloon.y - turret.y;
+                            const distance = Math.sqrt(dx * dx + dy * dy);
+                            
+                            if (distance < turret.range) {
+                                const angle = Math.atan2(dy, dx);
+                                this.bullets.push({
+                                    x: turret.x, y: turret.y,
+                                    vx: Math.cos(angle) * 12,
+                                    vy: Math.sin(angle) * 12,
+                                    damage: turret.damage
+                                });
+                                turret.lastShot = now;
+                            }
+                        }
+                    }
+                }
+                
+                for (let i = this.coinParticles.length - 1; i >= 0; i--) {
+                    const coin = this.coinParticles[i];
+                    coin.x += coin.vx;
+                    coin.y += coin.vy;
+                    coin.vy += coin.gravity;
+                    coin.vx *= 0.98;
+                    coin.life--;
+                    
+                    if (coin.life <= 0) {
+                        this.coinParticles.splice(i, 1);
+                    }
+                }
+                
+                for (let i = this.particles.length - 1; i >= 0; i--) {
+                    const particle = this.particles[i];
+                    particle.x += particle.vx;
+                    particle.y += particle.vy;
+                    particle.vx *= 0.98;
+                    particle.vy *= 0.98;
+                    particle.life--;
+                    
+                    if (particle.life <= 0) {
+                        this.particles.splice(i, 1);
+                    }
+                }
+                
+                if (this.waveActive && this.balloons.length === 0 && this.enemiesSpawned >= this.enemiesInWave) {
+                    this.waveComplete();
+                }
+                
+                this.updateUI();
+            }
+            
+            findNearestBalloon(x, y) {
+                let nearest = null;
+                let minDistance = Infinity;
+                
+                for (const balloon of this.balloons) {
+                    const dx = balloon.x - x;
+                    const dy = balloon.y - y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (distance < minDistance) {
+                        minDistance = distance;
+                        nearest = balloon;
+                    }
+                }
+                
+                return nearest;
+            }
+            
+            waveComplete() {
+                this.waveActive = false;
+                this.wave++;
+                this.showShop();
+            }
+            
+            showShop() {
+                document.getElementById('shop').style.display = 'block';
+                document.getElementById('shopCoins').textContent = this.coins;
+                this.updateShopButtons();
+            }
+            
+            updateShopButtons() {
+                const gunBtn = document.getElementById('upgradeGun');
+                const houseBtn = document.getElementById('reinforceHouse');
+                const turretBtn = document.getElementById('buyTurret');
+                const repairBtn = document.getElementById('repairHouse');
+                
+                gunBtn.disabled = this.coins < this.upgradeCosts.gun;
+                houseBtn.disabled = this.coins < this.upgradeCosts.house;
+                
+                // Hide turret button if player already has 3 turrets
+                if (this.turrets.length >= 3) {
+                    turretBtn.style.display = 'none';
+                } else {
+                    turretBtn.style.display = 'block';
+                    turretBtn.disabled = this.coins < this.upgradeCosts.turret;
+                    document.getElementById('turretCost').textContent = this.upgradeCosts.turret;
+                }
+                
+                repairBtn.disabled = this.coins < this.upgradeCosts.repair || this.houseHP >= this.maxHouseHP;
+                
+                document.getElementById('gunCost').textContent = this.upgradeCosts.gun;
+                document.getElementById('houseCost').textContent = this.upgradeCosts.house;
+                document.getElementById('repairCost').textContent = this.upgradeCosts.repair;
+            }
+            
+            upgradeGun() {
+                if (this.coins >= this.upgradeCosts.gun) {
+                    this.coins -= this.upgradeCosts.gun;
+                    this.player.gunLevel++;
+                    this.player.gunDamage = this.player.gunLevel;
+                    this.player.fireRate = Math.max(100, 300 - this.player.gunLevel * 20);
+                    this.upgradeCosts.gun = Math.floor(this.upgradeCosts.gun * 1.5);
+                    this.updateShopButtons();
+                }
+            }
+            
+            reinforceHouse() {
+                if (this.coins >= this.upgradeCosts.house) {
+                    this.coins -= this.upgradeCosts.house;
+                    this.house.armor++;
+                    this.maxHouseHP += 20;
+                    this.houseHP += 20;
+                    this.upgradeCosts.house = Math.floor(this.upgradeCosts.house * 1.3);
+                    this.updateShopButtons();
+                }
+            }
+            
+            buyTurret() {
+                if (this.coins >= this.upgradeCosts.turret && this.turrets.length < 3) {
+                    this.coins -= this.upgradeCosts.turret;
+                    this.placingTurret = true;
+                    document.getElementById('shop').style.display = 'none';
+                    this.upgradeCosts.turret = Math.floor(this.upgradeCosts.turret * 1.4);
+                }
+            }
+            
+            placeTurret(x, y) {
+                if (!this.placingTurret) return;
+                
+                const lineX = this.wall.x + this.wall.width + 20;
+                const originalHeight = this.height - 20 - (this.wall.y + 10);
+                const newHeight = originalHeight * 4.375;
+                const lineStartY = this.wall.y + 10 - (newHeight - originalHeight);
+                const lineEndY = this.height - 20;
+                
+                if (Math.abs(x - lineX) <= 30 && y >= lineStartY && y <= lineEndY) {
+                    this.turrets.push({
+                        x: lineX, y: y, damage: 1, level: 1,
+                        range: 300, fireRate: 500, lastShot: 0
+                    });
+                    
+                    this.placingTurret = false;
+                    this.showShop();
+                }
+            }
+            
+            repairHouse() {
+                if (this.coins >= this.upgradeCosts.repair && this.houseHP < this.maxHouseHP) {
+                    this.coins -= this.upgradeCosts.repair;
+                    this.houseHP = Math.min(this.maxHouseHP, this.houseHP + 30);
+                    this.updateShopButtons();
+                }
+            }
+            
+            closeShop() {
+                document.getElementById('shop').style.display = 'none';
+                this.startWave();
+            }
+            
+            togglePause() {
+                this.paused = !this.paused;
+                document.getElementById('pauseBtn').textContent = this.paused ? 'Resume' : 'Pause';
+            }
+            
+            showDifficultyMenu() {
+                // Update button selection state before showing menu
+                document.querySelectorAll('.difficulty-menu button').forEach(btn => {
+                    btn.classList.remove('selected');
+                });
+                document.getElementById(this.difficulty + 'Btn').classList.add('selected');
+                
+                document.getElementById('difficultyMenu').style.display = 'block';
+            }
+            
+            hideDifficultyMenu() {
+                document.getElementById('difficultyMenu').style.display = 'none';
+            }
+            
+            setDifficulty(difficulty) {
+                this.difficulty = difficulty;
+                
+                document.querySelectorAll('.difficulty-menu button').forEach(btn => {
+                    btn.classList.remove('selected');
+                });
+                document.getElementById(difficulty + 'Btn').classList.add('selected');
+                
+                document.getElementById('currentDifficulty').textContent = 
+                    difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
+                
+                this.hideDifficultyMenu();
+                
+                // Only auto-start wave if shop is not open
+                const shopOpen = document.getElementById('shop').style.display === 'block';
+                if (this.gameRunning && !this.waveActive && !shopOpen) {
+                    this.startWave();
+                }
+            }
+            
+            showDonateMessage() {
+                alert('Thank you for your interest in supporting the game!\n\nThis feature would connect to a donation platform in a real game.');
+            }
+            
+            render() {
+                this.ctx.clearRect(0, 0, this.width, this.height);
+                
+                this.drawGroundDecoration();
+                
+                this.ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+                for (let i = 0; i < 5; i++) {
+                    const x = (i * 200 + Date.now() * 0.02) % (this.width + 100);
+                    const y = 50 + i * 30;
+                    this.drawCloud(x, y);
+                }
+                
+                this.drawHouse();
+                this.drawWall();
+                this.drawPlayer();
+                
+                for (let i = 0; i < this.turrets.length; i++) {
+                    this.drawTurret(this.turrets[i], i + 1);
+                }
+                
+                if (this.placingTurret) {
+                    this.drawTurretPlacementLine();
+                    this.drawTurretPlacementPreview();
+                }
+                
+                for (const balloon of this.balloons) {
+                    this.drawBalloon(balloon);
+                }
+                
+                this.ctx.fillStyle = '#9B59B6';
+                for (const bullet of this.bullets) {
+                    this.ctx.beginPath();
+                    this.ctx.arc(bullet.x, bullet.y, 3, 0, Math.PI * 2);
+                    this.ctx.fill();
+                    
+                    this.ctx.fillStyle = 'rgba(155, 89, 182, 0.5)';
+                    this.ctx.beginPath();
+                    this.ctx.arc(bullet.x - bullet.vx * 0.5, bullet.y - bullet.vy * 0.5, 2, 0, Math.PI * 2);
+                    this.ctx.fill();
+                    this.ctx.fillStyle = '#9B59B6';
+                }
+                
+                for (const coin of this.coinParticles) {
+                    this.ctx.globalAlpha = coin.life / 40;
+                    this.ctx.fillStyle = '#FFD700';
+                    this.ctx.beginPath();
+                    this.ctx.arc(coin.x, coin.y, 4, 0, Math.PI * 2);
+                    this.ctx.fill();
+                    
+                    this.ctx.fillStyle = '#FFF';
+                    this.ctx.beginPath();
+                    this.ctx.arc(coin.x - 1, coin.y - 1, 1.5, 0, Math.PI * 2);
+                    this.ctx.fill();
+                }
+                this.ctx.globalAlpha = 1;
+                
+                for (const particle of this.particles) {
+                    this.ctx.globalAlpha = particle.life / 25;
+                    this.ctx.fillStyle = particle.color;
+                    this.ctx.beginPath();
+                    this.ctx.arc(particle.x, particle.y, 2, 0, Math.PI * 2);
+                    this.ctx.fill();
+                }
+                this.ctx.globalAlpha = 1;
+            }
+            
+            drawGroundDecoration() {
+                for (const tree of this.treePositions) {
+                    this.ctx.fillStyle = '#8B4513';
+                    this.ctx.fillRect(tree.x - 6, tree.y, 12, this.height - tree.y);
+                    
+                    this.ctx.fillStyle = '#228B22';
+                    this.ctx.beginPath();
+                    this.ctx.arc(tree.x, tree.y - 8, 25, 0, Math.PI * 2);
+                    this.ctx.fill();
+                    
+                    this.ctx.beginPath();
+                    this.ctx.arc(tree.x - 15, tree.y + 8, 18, 0, Math.PI * 2);
+                    this.ctx.fill();
+                    
+                    this.ctx.beginPath();
+                    this.ctx.arc(tree.x + 15, tree.y + 4, 20, 0, Math.PI * 2);
+                    this.ctx.fill();
+                }
+                
+                for (const bush of this.bushPositions) {
+                    this.ctx.fillStyle = '#32CD32';
+                    this.ctx.beginPath();
+                    this.ctx.arc(bush.x - 10, bush.y, 10, 0, Math.PI * 2);
+                    this.ctx.fill();
+                    this.ctx.beginPath();
+                    this.ctx.arc(bush.x, bush.y - 3, 12, 0, Math.PI * 2);
+                    this.ctx.fill();
+                    this.ctx.beginPath();
+                    this.ctx.arc(bush.x + 10, bush.y, 10, 0, Math.PI * 2);
+                    this.ctx.fill();
+                }
+            }
+            
+            drawCloud(x, y) {
+                this.ctx.beginPath();
+                this.ctx.arc(x, y, 20, 0, Math.PI * 2);
+                this.ctx.arc(x + 25, y, 35, 0, Math.PI * 2);
+                this.ctx.arc(x + 50, y, 20, 0, Math.PI * 2);
+                this.ctx.fill();
+            }
+            
+            drawHouse() {
+                // 3D House walls with gradient
+                const wallGradient = this.ctx.createLinearGradient(
+                    this.house.x, this.house.y,
+                    this.house.x, this.house.y + this.house.height
+                );
+                wallGradient.addColorStop(0, '#A0522D');
+                wallGradient.addColorStop(0.5, '#8B4513');
+                wallGradient.addColorStop(1, '#654321');
+                
+                this.ctx.fillStyle = wallGradient;
+                this.ctx.fillRect(this.house.x, this.house.y, this.house.width, this.house.height);
+                
+                // Add wood texture lines
+                this.ctx.strokeStyle = 'rgba(101, 67, 33, 0.3)';
+                this.ctx.lineWidth = 1;
+                for (let i = 0; i < this.house.width; i += 15) {
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(this.house.x + i, this.house.y);
+                    this.ctx.lineTo(this.house.x + i + 5, this.house.y + this.house.height);
+                    this.ctx.stroke();
+                }
+                
+                // 3D Roof with gradient and shadows
+                const roofGradient = this.ctx.createLinearGradient(
+                    this.house.x + this.house.width / 2, this.house.y - 60,
+                    this.house.x + this.house.width / 2, this.house.y
+                );
+                roofGradient.addColorStop(0, '#8B4513');
+                roofGradient.addColorStop(0.5, '#654321');
+                roofGradient.addColorStop(1, '#4A2C17');
+                
+                this.ctx.fillStyle = roofGradient;
+                this.ctx.beginPath();
+                this.ctx.moveTo(this.house.x - 25, this.house.y);
+                this.ctx.lineTo(this.house.x + this.house.width + 25, this.house.y);
+                this.ctx.lineTo(this.house.x + this.house.width / 2, this.house.y - 65);
+                this.ctx.closePath();
+                this.ctx.fill();
+                
+                // Roof edge highlight
+                this.ctx.strokeStyle = 'rgba(139, 69, 19, 0.8)';
+                this.ctx.lineWidth = 3;
+                this.ctx.beginPath();
+                this.ctx.moveTo(this.house.x - 25, this.house.y);
+                this.ctx.lineTo(this.house.x + this.house.width / 2, this.house.y - 65);
+                this.ctx.lineTo(this.house.x + this.house.width + 25, this.house.y);
+                this.ctx.stroke();
+                
+                // Roof tiles effect
+                this.ctx.strokeStyle = 'rgba(0, 0, 0, 0.2)';
+                this.ctx.lineWidth = 1;
+                for (let i = 0; i < 5; i++) {
+                    const y = this.house.y - 15 * (i + 1);
+                    const width = (this.house.width + 50) * (1 - i * 0.2);
+                    const xStart = this.house.x + this.house.width / 2 - width / 2;
+                    
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(xStart, y);
+                    this.ctx.lineTo(xStart + width, y);
+                    this.ctx.stroke();
+                }
+                
+                // 3D Windows with gradient glass and frames
+                const windowPositions = [
+                    { x: this.house.x + 20, y: this.house.y + 30 },
+                    { x: this.house.x + this.house.width - 55, y: this.house.y + 30 },
+                    { x: this.house.x + 20, y: this.house.y + 100 },
+                    { x: this.house.x + this.house.width - 55, y: this.house.y + 100 }
+                ];
+                
+                for (const window of windowPositions) {
+                    // Window frame
+                    this.ctx.fillStyle = '#4A2C17';
+                    this.ctx.fillRect(window.x - 3, window.y - 3, 41, 41);
+                    
+                    // Glass with gradient
+                    const glassGradient = this.ctx.createLinearGradient(
+                        window.x, window.y,
+                        window.x + 35, window.y + 35
+                    );
+                    glassGradient.addColorStop(0, '#B0E0E6');
+                    glassGradient.addColorStop(0.5, '#87CEEB');
+                    glassGradient.addColorStop(1, '#6495ED');
+                    
+                    this.ctx.fillStyle = glassGradient;
+                    this.ctx.fillRect(window.x, window.y, 35, 35);
+                    
+                    // Window reflection
+                    this.ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(window.x, window.y);
+                    this.ctx.lineTo(window.x + 15, window.y);
+                    this.ctx.lineTo(window.x, window.y + 15);
+                    this.ctx.closePath();
+                    this.ctx.fill();
+                    
+                    // Window cross bars
+                    this.ctx.strokeStyle = '#4A2C17';
+                    this.ctx.lineWidth = 2;
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(window.x + 17.5, window.y);
+                    this.ctx.lineTo(window.x + 17.5, window.y + 35);
+                    this.ctx.moveTo(window.x, window.y + 17.5);
+                    this.ctx.lineTo(window.x + 35, window.y + 17.5);
+                    this.ctx.stroke();
+                }
+                
+                // 3D Door with gradient and details
+                const doorX = this.house.x + this.house.width / 2 - 18;
+                const doorY = this.house.y + this.house.height - 70;
+                
+                // Door frame
+                this.ctx.fillStyle = '#3A2317';
+                this.ctx.fillRect(doorX - 3, doorY - 3, 42, 76);
+                
+                // Door with gradient
+                const doorGradient = this.ctx.createLinearGradient(
+                    doorX, doorY,
+                    doorX + 36, doorY
+                );
+                doorGradient.addColorStop(0, '#5A5A5A');
+                doorGradient.addColorStop(0.5, '#4A4A4A');
+                doorGradient.addColorStop(1, '#3A3A3A');
+                
+                this.ctx.fillStyle = doorGradient;
+                this.ctx.fillRect(doorX, doorY, 36, 70);
+                
+                // Door panels
+                this.ctx.strokeStyle = 'rgba(0, 0, 0, 0.3)';
+                this.ctx.lineWidth = 1;
+                this.ctx.strokeRect(doorX + 6, doorY + 8, 10, 20);
+                this.ctx.strokeRect(doorX + 20, doorY + 8, 10, 20);
+                this.ctx.strokeRect(doorX + 6, doorY + 35, 10, 25);
+                this.ctx.strokeRect(doorX + 20, doorY + 35, 10, 25);
+                
+                // Door knob with 3D effect
+                const knobGradient = this.ctx.createRadialGradient(
+                    doorX + 28, doorY + 35, 0,
+                    doorX + 28, doorY + 35, 3
+                );
+                knobGradient.addColorStop(0, '#FFD700');
+                knobGradient.addColorStop(0.7, '#FFA500');
+                knobGradient.addColorStop(1, '#B8860B');
+                
+                this.ctx.fillStyle = knobGradient;
+                this.ctx.beginPath();
+                this.ctx.arc(doorX + 28, doorY + 35, 3, 0, Math.PI * 2);
+                this.ctx.fill();
+                
+                // Chimney
+                const chimneyX = this.house.x + this.house.width * 0.75;
+                const chimneyGradient = this.ctx.createLinearGradient(
+                    chimneyX, this.house.y - 30,
+                    chimneyX + 25, this.house.y - 30
+                );
+                chimneyGradient.addColorStop(0, '#8B4513');
+                chimneyGradient.addColorStop(0.5, '#654321');
+                chimneyGradient.addColorStop(1, '#4A2C17');
+                
+                this.ctx.fillStyle = chimneyGradient;
+                this.ctx.fillRect(chimneyX, this.house.y - 45, 25, 45);
+                
+                // Chimney top
+                this.ctx.fillStyle = '#3A2317';
+                this.ctx.fillRect(chimneyX - 3, this.house.y - 48, 31, 5);
+                
+                // HP Bar with gradient
+                const hpBarWidth = this.house.width;
+                const hpPercentage = this.houseHP / this.maxHouseHP;
+                
+                // HP bar background
+                this.ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+                this.ctx.fillRect(this.house.x - 2, this.house.y - 27, hpBarWidth + 4, 16);
+                
+                // HP bar gradient
+                const hpGradient = this.ctx.createLinearGradient(
+                    this.house.x, this.house.y - 25,
+                    this.house.x, this.house.y - 13
+                );
+                if (hpPercentage > 0.5) {
+                    hpGradient.addColorStop(0, '#00FF00');
+                    hpGradient.addColorStop(1, '#00AA00');
+                } else if (hpPercentage > 0.25) {
+                    hpGradient.addColorStop(0, '#FFFF00');
+                    hpGradient.addColorStop(1, '#AAAA00');
+                } else {
+                    hpGradient.addColorStop(0, '#FF0000');
+                    hpGradient.addColorStop(1, '#AA0000');
+                }
+                
+                this.ctx.fillStyle = hpGradient;
+                this.ctx.fillRect(this.house.x, this.house.y - 25, hpBarWidth * hpPercentage, 12);
+                
+                // HP bar border
+                this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+                this.ctx.lineWidth = 1;
+                this.ctx.strokeRect(this.house.x, this.house.y - 25, hpBarWidth, 12);
+            }
+            
+            drawWall() {
+                // 3D Metallic fortified wall
+                const wallGradient = this.ctx.createLinearGradient(
+                    this.wall.x, this.wall.y,
+                    this.wall.x + this.wall.width, this.wall.y + this.wall.height
+                );
+                wallGradient.addColorStop(0, '#8A8A8A');
+                wallGradient.addColorStop(0.2, '#707070');
+                wallGradient.addColorStop(0.5, '#606060');
+                wallGradient.addColorStop(0.8, '#505050');
+                wallGradient.addColorStop(1, '#404040');
+                
+                // Main wall body
+                this.ctx.fillStyle = wallGradient;
+                this.ctx.fillRect(this.wall.x, this.wall.y, this.wall.width, this.wall.height);
+                
+                // Wall top cap with metallic shine
+                const topCapGradient = this.ctx.createLinearGradient(
+                    this.wall.x, this.wall.y - 8,
+                    this.wall.x, this.wall.y
+                );
+                topCapGradient.addColorStop(0, '#A0A0A0');
+                topCapGradient.addColorStop(0.5, '#909090');
+                topCapGradient.addColorStop(1, '#707070');
+                
+                this.ctx.fillStyle = topCapGradient;
+                this.ctx.fillRect(this.wall.x - 3, this.wall.y - 8, this.wall.width + 6, 8);
+                
+                // Top cap highlight
+                this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+                this.ctx.lineWidth = 1;
+                this.ctx.beginPath();
+                this.ctx.moveTo(this.wall.x - 3, this.wall.y - 8);
+                this.ctx.lineTo(this.wall.x + this.wall.width + 3, this.wall.y - 8);
+                this.ctx.stroke();
+                
+                // Vertical reinforcement plates
+                const plateHeight = this.wall.height / 6;
+                for (let i = 0; i < 6; i++) {
+                    const plateY = this.wall.y + i * plateHeight;
+                    
+                    // Plate gradient
+                    const plateGradient = this.ctx.createLinearGradient(
+                        this.wall.x, plateY,
+                        this.wall.x + this.wall.width, plateY + plateHeight
+                    );
+                    
+                    if (i % 2 === 0) {
+                        plateGradient.addColorStop(0, 'rgba(120, 120, 120, 0.5)');
+                        plateGradient.addColorStop(0.5, 'rgba(90, 90, 90, 0.5)');
+                        plateGradient.addColorStop(1, 'rgba(70, 70, 70, 0.5)');
+                    } else {
+                        plateGradient.addColorStop(0, 'rgba(100, 100, 100, 0.5)');
+                        plateGradient.addColorStop(0.5, 'rgba(80, 80, 80, 0.5)');
+                        plateGradient.addColorStop(1, 'rgba(60, 60, 60, 0.5)');
+                    }
+                    
+                    this.ctx.fillStyle = plateGradient;
+                    this.ctx.fillRect(this.wall.x, plateY, this.wall.width, plateHeight - 2);
+                    
+                    // Plate separation line
+                    this.ctx.strokeStyle = 'rgba(0, 0, 0, 0.4)';
+                    this.ctx.lineWidth = 2;
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(this.wall.x, plateY + plateHeight - 1);
+                    this.ctx.lineTo(this.wall.x + this.wall.width, plateY + plateHeight - 1);
+                    this.ctx.stroke();
+                }
+                
+                // Rivets/bolts for industrial fortified look
+                const rivetSpacing = this.wall.height / 5;
+                for (let i = 0; i <= 5; i++) {
+                    const rivetY = this.wall.y + i * rivetSpacing;
+                    
+                    // Left rivet
+                    this.drawRivet(this.wall.x + 4, rivetY);
+                    // Right rivet
+                    this.drawRivet(this.wall.x + this.wall.width - 4, rivetY);
+                }
+                
+                // Left edge highlight for 3D depth
+                const leftHighlight = this.ctx.createLinearGradient(
+                    this.wall.x, this.wall.y,
+                    this.wall.x + 3, this.wall.y
+                );
+                leftHighlight.addColorStop(0, 'rgba(255, 255, 255, 0.2)');
+                leftHighlight.addColorStop(1, 'rgba(255, 255, 255, 0)');
+                
+                this.ctx.fillStyle = leftHighlight;
+                this.ctx.fillRect(this.wall.x, this.wall.y, 3, this.wall.height);
+                
+                // Right edge shadow for depth
+                const rightShadow = this.ctx.createLinearGradient(
+                    this.wall.x + this.wall.width - 3, this.wall.y,
+                    this.wall.x + this.wall.width, this.wall.y
+                );
+                rightShadow.addColorStop(0, 'rgba(0, 0, 0, 0)');
+                rightShadow.addColorStop(1, 'rgba(0, 0, 0, 0.4)');
+                
+                this.ctx.fillStyle = rightShadow;
+                this.ctx.fillRect(this.wall.x + this.wall.width - 3, this.wall.y, 3, this.wall.height);
+                
+                // Battle scars and wear
+                this.ctx.strokeStyle = 'rgba(40, 40, 40, 0.3)';
+                this.ctx.lineWidth = 1;
+                for (let i = 0; i < 3; i++) {
+                    const scarY = this.wall.y + 20 + Math.random() * (this.wall.height - 40);
+                    const scarLength = 8 + Math.random() * 10;
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(this.wall.x + 5, scarY);
+                    this.ctx.lineTo(this.wall.x + 5 + scarLength, scarY + 2);
+                    this.ctx.stroke();
+                }
+                
+                // Ground shadow
+                const shadowGradient = this.ctx.createLinearGradient(
+                    this.wall.x, this.wall.y + this.wall.height,
+                    this.wall.x, this.wall.y + this.wall.height + 15
+                );
+                shadowGradient.addColorStop(0, 'rgba(0, 0, 0, 0.4)');
+                shadowGradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+                
+                this.ctx.fillStyle = shadowGradient;
+                this.ctx.fillRect(this.wall.x - 5, this.wall.y + this.wall.height, this.wall.width + 10, 15);
+            }
+            
+            drawRivet(x, y) {
+                // Rivet shadow
+                this.ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+                this.ctx.beginPath();
+                this.ctx.arc(x + 0.5, y + 0.5, 2.5, 0, Math.PI * 2);
+                this.ctx.fill();
+                
+                // Rivet body with gradient
+                const rivetGradient = this.ctx.createRadialGradient(
+                    x - 1, y - 1, 0,
+                    x, y, 2
+                );
+                rivetGradient.addColorStop(0, '#C0C0C0');
+                rivetGradient.addColorStop(0.5, '#909090');
+                rivetGradient.addColorStop(1, '#505050');
+                
+                this.ctx.fillStyle = rivetGradient;
+                this.ctx.beginPath();
+                this.ctx.arc(x, y, 2, 0, Math.PI * 2);
+                this.ctx.fill();
+                
+                // Rivet highlight
+                this.ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+                this.ctx.beginPath();
+                this.ctx.arc(x - 0.5, y - 0.5, 0.8, 0, Math.PI * 2);
+                this.ctx.fill();
+            }
+            
+            drawPlayer() {
+                let gunAngle = 0;
+                if (this.mouseX && this.mouseY) {
+                    const dx = this.mouseX - this.player.x;
+                    const dy = this.mouseY - this.player.y;
+                    gunAngle = Math.atan2(dy, dx);
+                }
+                
+                // 3D Body with gradient
+                const bodyGradient = this.ctx.createLinearGradient(
+                    this.player.x - 13, this.player.y - 5,
+                    this.player.x + 13, this.player.y + 27
+                );
+                bodyGradient.addColorStop(0, '#6495ED');
+                bodyGradient.addColorStop(0.3, '#4169E1');
+                bodyGradient.addColorStop(0.7, '#2E4BC7');
+                bodyGradient.addColorStop(1, '#1E3A8A');
+                
+                // Draw body with rounded corners for 3D effect
+                this.ctx.fillStyle = bodyGradient;
+                this.ctx.beginPath();
+                this.ctx.roundRect(this.player.x - 13, this.player.y - 5, 26, 32, 4);
+                this.ctx.fill();
+                
+                // Body highlight for 3D effect
+                const bodyHighlight = this.ctx.createLinearGradient(
+                    this.player.x - 10, this.player.y - 3,
+                    this.player.x - 5, this.player.y + 5
+                );
+                bodyHighlight.addColorStop(0, 'rgba(255, 255, 255, 0.3)');
+                bodyHighlight.addColorStop(1, 'rgba(255, 255, 255, 0)');
+                this.ctx.fillStyle = bodyHighlight;
+                this.ctx.fillRect(this.player.x - 10, this.player.y - 3, 5, 10);
+                
+                // Add collar
+                this.ctx.fillStyle = '#1E3A8A';
+                this.ctx.fillRect(this.player.x - 13, this.player.y - 5, 26, 4);
+                
+                // Buttons on shirt
+                this.ctx.fillStyle = 'white';
+                for (let i = 0; i < 3; i++) {
+                    this.ctx.beginPath();
+                    this.ctx.arc(this.player.x, this.player.y + 3 + i * 8, 1.5, 0, Math.PI * 2);
+                    this.ctx.fill();
+                }
+                
+                // 3D Head with spherical gradient
+                const headY = this.player.y - 10;
+                const headGradient = this.ctx.createRadialGradient(
+                    this.player.x - this.player.size * 0.3, 
+                    headY - this.player.size * 0.3, 
+                    0,
+                    this.player.x, 
+                    headY, 
+                    this.player.size
+                );
+                headGradient.addColorStop(0, '#FFD4E5');
+                headGradient.addColorStop(0.3, '#FFB6C1');
+                headGradient.addColorStop(0.7, '#FF91A4');
+                headGradient.addColorStop(1, '#E57388');
+                
+                this.ctx.fillStyle = headGradient;
+                this.ctx.beginPath();
+                this.ctx.arc(this.player.x, headY, this.player.size, 0, Math.PI * 2);
+                this.ctx.fill();
+                
+                // Head edge shadow for depth
+                const shadowGradient = this.ctx.createRadialGradient(
+                    this.player.x, headY, this.player.size * 0.8,
+                    this.player.x, headY, this.player.size
+                );
+                shadowGradient.addColorStop(0, 'rgba(0, 0, 0, 0)');
+                shadowGradient.addColorStop(1, 'rgba(0, 0, 0, 0.15)');
+                this.ctx.fillStyle = shadowGradient;
+                this.ctx.beginPath();
+                this.ctx.arc(this.player.x, headY, this.player.size, 0, Math.PI * 2);
+                this.ctx.fill();
+                
+                // Primary head highlight
+                const highlightGradient = this.ctx.createRadialGradient(
+                    this.player.x - this.player.size * 0.4,
+                    headY - this.player.size * 0.4,
+                    0,
+                    this.player.x - this.player.size * 0.2,
+                    headY - this.player.size * 0.2,
+                    this.player.size * 0.4
+                );
+                highlightGradient.addColorStop(0, 'rgba(255, 255, 255, 0.6)');
+                highlightGradient.addColorStop(0.5, 'rgba(255, 255, 255, 0.2)');
+                highlightGradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+                
+                this.ctx.save();
+                this.ctx.beginPath();
+                this.ctx.arc(this.player.x, headY, this.player.size * 0.9, 0, Math.PI * 2);
+                this.ctx.clip();
+                
+                this.ctx.fillStyle = highlightGradient;
+                this.ctx.beginPath();
+                this.ctx.arc(this.player.x - this.player.size * 0.3, headY - this.player.size * 0.3, this.player.size * 0.5, 0, Math.PI * 2);
+                this.ctx.fill();
+                this.ctx.restore();
+                
+                // 3D Eyes with depth
+                // Eye whites with subtle gradient
+                this.ctx.fillStyle = 'white';
+                this.ctx.beginPath();
+                this.ctx.arc(this.player.x - 6, headY - 5, 4, 0, Math.PI * 2);
+                this.ctx.fill();
+                this.ctx.beginPath();
+                this.ctx.arc(this.player.x + 6, headY - 5, 4, 0, Math.PI * 2);
+                this.ctx.fill();
+                
+                // Eye shadows
+                this.ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+                this.ctx.beginPath();
+                this.ctx.arc(this.player.x - 6, headY - 4, 4, 0, Math.PI * 2);
+                this.ctx.fill();
+                this.ctx.beginPath();
+                this.ctx.arc(this.player.x + 6, headY - 4, 4, 0, Math.PI * 2);
+                this.ctx.fill();
+                
+                // Pupils with gradient
+                const pupilGradient = this.ctx.createRadialGradient(
+                    this.player.x - 6, headY - 5, 0,
+                    this.player.x - 6, headY - 5, 2
+                );
+                pupilGradient.addColorStop(0, '#000000');
+                pupilGradient.addColorStop(1, '#333333');
+                
+                this.ctx.fillStyle = pupilGradient;
+                this.ctx.beginPath();
+                this.ctx.arc(this.player.x - 6, headY - 5, 2, 0, Math.PI * 2);
+                this.ctx.fill();
+                
+                const pupilGradient2 = this.ctx.createRadialGradient(
+                    this.player.x + 6, headY - 5, 0,
+                    this.player.x + 6, headY - 5, 2
+                );
+                pupilGradient2.addColorStop(0, '#000000');
+                pupilGradient2.addColorStop(1, '#333333');
+                
+                this.ctx.fillStyle = pupilGradient2;
+                this.ctx.beginPath();
+                this.ctx.arc(this.player.x + 6, headY - 5, 2, 0, Math.PI * 2);
+                this.ctx.fill();
+                
+                // Eye highlights
+                this.ctx.fillStyle = 'white';
+                this.ctx.beginPath();
+                this.ctx.arc(this.player.x - 7, headY - 6, 1, 0, Math.PI * 2);
+                this.ctx.fill();
+                this.ctx.beginPath();
+                this.ctx.arc(this.player.x + 5, headY - 6, 1, 0, Math.PI * 2);
+                this.ctx.fill();
+                
+                // 3D Smile
+                this.ctx.strokeStyle = 'rgba(0, 0, 0, 0.6)';
+                this.ctx.lineWidth = 2.5;
+                this.ctx.beginPath();
+                this.ctx.arc(this.player.x, headY + 5, 5, 0, Math.PI);
+                this.ctx.stroke();
+                
+                // 3D Gun with metallic gradient
+                const gunGradient = this.ctx.createLinearGradient(
+                    this.player.x + 18, this.player.y + 6,
+                    this.player.x + 18, this.player.y + 10
+                );
+                gunGradient.addColorStop(0, '#5F6F6F');
+                gunGradient.addColorStop(0.3, '#3F4F4F');
+                gunGradient.addColorStop(0.7, '#2F3F3F');
+                gunGradient.addColorStop(1, '#1F2F2F');
+                
+                // Gun barrel with gradient
+                this.ctx.strokeStyle = gunGradient;
+                this.ctx.lineWidth = 6;
+                this.ctx.lineCap = 'round';
+                this.ctx.beginPath();
+                this.ctx.moveTo(this.player.x + 18, this.player.y + 8);
+                
+                const gunLength = 30;
+                const gunEndX = this.player.x + 18 + Math.cos(gunAngle) * gunLength;
+                const gunEndY = this.player.y + 8 + Math.sin(gunAngle) * gunLength;
+                
+                this.ctx.lineTo(gunEndX, gunEndY);
+                this.ctx.stroke();
+                
+                // Gun highlight
+                this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+                this.ctx.lineWidth = 1.5;
+                this.ctx.beginPath();
+                this.ctx.moveTo(this.player.x + 18, this.player.y + 6);
+                this.ctx.lineTo(gunEndX - Math.cos(gunAngle) * 3, gunEndY - Math.sin(gunAngle) * 0.5 - 2);
+                this.ctx.stroke();
+                
+                // Gun muzzle
+                this.ctx.fillStyle = '#1F2F2F';
+                this.ctx.beginPath();
+                this.ctx.arc(gunEndX, gunEndY, 4, 0, Math.PI * 2);
+                this.ctx.fill();
+                this.ctx.fillStyle = '#000000';
+                this.ctx.beginPath();
+                this.ctx.arc(gunEndX, gunEndY, 2, 0, Math.PI * 2);
+                this.ctx.fill();
+                
+                // 3D Arm holding gun with gradient
+                const armGradient = this.ctx.createLinearGradient(
+                    this.player.x + 13, this.player.y + 10,
+                    this.player.x + 24, this.player.y + 20
+                );
+                armGradient.addColorStop(0, '#FFD4E5');
+                armGradient.addColorStop(0.5, '#FFB6C1');
+                armGradient.addColorStop(1, '#E57388');
+                
+                this.ctx.strokeStyle = armGradient;
+                this.ctx.lineWidth = 5;
+                this.ctx.lineCap = 'round';
+                this.ctx.beginPath();
+                this.ctx.moveTo(this.player.x + 13, this.player.y + 10);
+                this.ctx.lineTo(this.player.x + 20, this.player.y + 15);
+                this.ctx.stroke();
+                
+                // Hand at gun grip
+                this.ctx.fillStyle = '#FFB6C1';
+                this.ctx.beginPath();
+                this.ctx.arc(this.player.x + 20, this.player.y + 15, 3, 0, Math.PI * 2);
+                this.ctx.fill();
+                
+                // Hand highlight
+                this.ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+                this.ctx.beginPath();
+                this.ctx.arc(this.player.x + 19, this.player.y + 14, 1, 0, Math.PI * 2);
+                this.ctx.fill();
+            }
+            
+            drawTurret(turret, turretNumber = 1) {
+                // 3D Range indicator with gradient
+                const rangeGradient = this.ctx.createRadialGradient(
+                    turret.x, turret.y, turret.range * 0.7,
+                    turret.x, turret.y, turret.range
+                );
+                rangeGradient.addColorStop(0, 'rgba(128, 0, 128, 0.02)');
+                rangeGradient.addColorStop(0.7, 'rgba(128, 0, 128, 0.05)');
+                rangeGradient.addColorStop(1, 'rgba(128, 0, 128, 0.1)');
+                
+                this.ctx.fillStyle = rangeGradient;
+                this.ctx.beginPath();
+                this.ctx.arc(turret.x, turret.y, turret.range, 0, Math.PI * 2);
+                this.ctx.fill();
+                
+                // Range border with glow effect
+                this.ctx.strokeStyle = 'rgba(128, 0, 128, 0.2)';
+                this.ctx.lineWidth = 2;
+                this.ctx.beginPath();
+                this.ctx.arc(turret.x, turret.y, turret.range, 0, Math.PI * 2);
+                this.ctx.stroke();
+                
+                // Pulse effect on range
+                const pulseAlpha = 0.1 + 0.05 * Math.sin(Date.now() * 0.002);
+                this.ctx.strokeStyle = `rgba(147, 0, 211, ${pulseAlpha})`;
+                this.ctx.lineWidth = 1;
+                this.ctx.beginPath();
+                this.ctx.arc(turret.x, turret.y, turret.range - 2, 0, Math.PI * 2);
+                this.ctx.stroke();
+                
+                // 3D Turret base with metallic gradient
+                const baseGradient = this.ctx.createLinearGradient(
+                    turret.x - 15, turret.y - 10,
+                    turret.x + 15, turret.y + 10
+                );
+                baseGradient.addColorStop(0, '#8A8A8A');
+                baseGradient.addColorStop(0.3, '#696969');
+                baseGradient.addColorStop(0.7, '#505050');
+                baseGradient.addColorStop(1, '#303030');
+                
+                // Base with rounded corners
+                this.ctx.fillStyle = baseGradient;
+                this.ctx.beginPath();
+                this.ctx.roundRect(turret.x - 15, turret.y - 10, 30, 20, 3);
+                this.ctx.fill();
+                
+                // Base edge highlight for 3D effect
+                this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+                this.ctx.lineWidth = 1;
+                this.ctx.beginPath();
+                this.ctx.roundRect(turret.x - 14, turret.y - 9, 28, 18, 2);
+                this.ctx.stroke();
+                
+                // Metal plate details
+                this.ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+                this.ctx.fillRect(turret.x - 12, turret.y - 7, 24, 1);
+                this.ctx.fillRect(turret.x - 12, turret.y + 6, 24, 1);
+                
+                // Bolts/rivets for industrial look
+                const boltPositions = [
+                    { x: turret.x - 10, y: turret.y - 5 },
+                    { x: turret.x + 10, y: turret.y - 5 },
+                    { x: turret.x - 10, y: turret.y + 5 },
+                    { x: turret.x + 10, y: turret.y + 5 }
+                ];
+                
+                for (const bolt of boltPositions) {
+                    // Bolt shadow
+                    this.ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
+                    this.ctx.beginPath();
+                    this.ctx.arc(bolt.x, bolt.y, 1.5, 0, Math.PI * 2);
+                    this.ctx.fill();
+                    
+                    // Bolt with gradient
+                    const boltGradient = this.ctx.createRadialGradient(
+                        bolt.x - 0.5, bolt.y - 0.5, 0,
+                        bolt.x, bolt.y, 1.2
+                    );
+                    boltGradient.addColorStop(0, '#C0C0C0');
+                    boltGradient.addColorStop(1, '#606060');
+                    
+                    this.ctx.fillStyle = boltGradient;
+                    this.ctx.beginPath();
+                    this.ctx.arc(bolt.x, bolt.y, 1.2, 0, Math.PI * 2);
+                    this.ctx.fill();
+                }
+                
+                // Find nearest enemy for barrel rotation
+                let barrelAngle = -Math.PI / 2; // Default upward
+                const nearestBalloon = this.findNearestBalloon(turret.x, turret.y);
+                if (nearestBalloon) {
+                    const dx = nearestBalloon.x - turret.x;
+                    const dy = nearestBalloon.y - turret.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    if (distance < turret.range) {
+                        barrelAngle = Math.atan2(dy, dx);
+                    }
+                }
+                
+                // 3D Rotating barrel mount
+                const mountGradient = this.ctx.createRadialGradient(
+                    turret.x - 2, turret.y - 2, 0,
+                    turret.x, turret.y, 6
+                );
+                mountGradient.addColorStop(0, '#707070');
+                mountGradient.addColorStop(0.7, '#505050');
+                mountGradient.addColorStop(1, '#303030');
+                
+                this.ctx.fillStyle = mountGradient;
+                this.ctx.beginPath();
+                this.ctx.arc(turret.x, turret.y, 5, 0, Math.PI * 2);
+                this.ctx.fill();
+                
+                // Mount highlight
+                this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+                this.ctx.lineWidth = 0.5;
+                this.ctx.beginPath();
+                this.ctx.arc(turret.x, turret.y, 4, -Math.PI/3, -Math.PI/6);
+                this.ctx.stroke();
+                
+                // 3D Gun barrel with gradient
+                const barrelEndX = turret.x + Math.cos(barrelAngle) * 22;
+                const barrelEndY = turret.y + Math.sin(barrelAngle) * 22;
+                
+                const barrelGradient = this.ctx.createLinearGradient(
+                    turret.x, turret.y,
+                    barrelEndX, barrelEndY
+                );
+                barrelGradient.addColorStop(0, '#4F5F5F');
+                barrelGradient.addColorStop(0.3, '#3F4F4F');
+                barrelGradient.addColorStop(0.7, '#2F3F3F');
+                barrelGradient.addColorStop(1, '#1F2F2F');
+                
+                this.ctx.strokeStyle = barrelGradient;
+                this.ctx.lineWidth = 7;
+                this.ctx.lineCap = 'round';
+                this.ctx.beginPath();
+                this.ctx.moveTo(turret.x, turret.y);
+                this.ctx.lineTo(barrelEndX, barrelEndY);
+                this.ctx.stroke();
+                
+                // Barrel highlight for metallic shine
+                this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+                this.ctx.lineWidth = 1.5;
+                this.ctx.beginPath();
+                this.ctx.moveTo(
+                    turret.x + Math.cos(barrelAngle - 0.15) * 3, 
+                    turret.y + Math.sin(barrelAngle - 0.15) * 3
+                );
+                this.ctx.lineTo(
+                    barrelEndX + Math.cos(barrelAngle - 0.15) * 1, 
+                    barrelEndY + Math.sin(barrelAngle - 0.15) * 1
+                );
+                this.ctx.stroke();
+                
+                // Barrel muzzle with depth
+                this.ctx.fillStyle = '#1F2F2F';
+                this.ctx.beginPath();
+                this.ctx.arc(barrelEndX, barrelEndY, 4.5, 0, Math.PI * 2);
+                this.ctx.fill();
+                
+                this.ctx.fillStyle = '#000000';
+                this.ctx.beginPath();
+                this.ctx.arc(barrelEndX, barrelEndY, 2.5, 0, Math.PI * 2);
+                this.ctx.fill();
+                
+                // Level indicator with 3D badge
+                const badgeGradient = this.ctx.createRadialGradient(
+                    turret.x - 2, turret.y + 18, 0,
+                    turret.x, turret.y + 20, 8
+                );
+                badgeGradient.addColorStop(0, '#FFD700');
+                badgeGradient.addColorStop(0.7, '#FFA500');
+                badgeGradient.addColorStop(1, '#FF8C00');
+                
+                this.ctx.fillStyle = badgeGradient;
+                this.ctx.beginPath();
+                this.ctx.arc(turret.x, turret.y + 20, 8, 0, Math.PI * 2);
+                this.ctx.fill();
+                
+                // Badge border
+                this.ctx.strokeStyle = '#B8860B';
+                this.ctx.lineWidth = 1;
+                this.ctx.beginPath();
+                this.ctx.arc(turret.x, turret.y + 20, 8, 0, Math.PI * 2);
+                this.ctx.stroke();
+                
+                // Turret number text with shadow
+                this.ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+                this.ctx.font = 'bold 10px Arial';
+                this.ctx.textAlign = 'center';
+                this.ctx.textBaseline = 'middle';
+                this.ctx.fillText(`T${turretNumber}`, turret.x + 0.5, turret.y + 20.5);
+                
+                this.ctx.fillStyle = 'white';
+                this.ctx.fillText(`T${turretNumber}`, turret.x, turret.y + 20);
+            }
+            
+            drawTurretPlacementLine() {
+                const lineX = this.wall.x + this.wall.width + 20;
+                const originalHeight = this.height - 20 - (this.wall.y + 10);
+                const newHeight = originalHeight * 4.375;
+                const lineStartY = this.wall.y + 10 - (newHeight - originalHeight);
+                const lineEndY = this.height - 20;
+                
+                this.ctx.strokeStyle = '#FF0000';
+                this.ctx.lineWidth = 4;
+                this.ctx.beginPath();
+                this.ctx.moveTo(lineX, lineStartY);
+                this.ctx.lineTo(lineX, lineEndY);
+                this.ctx.stroke();
+                
+                const pulseAlpha = 0.5 + 0.5 * Math.sin(Date.now() * 0.005);
+                this.ctx.strokeStyle = `rgba(255, 0, 0, ${pulseAlpha})`;
+                this.ctx.lineWidth = 8;
+                this.ctx.beginPath();
+                this.ctx.moveTo(lineX, lineStartY);
+                this.ctx.lineTo(lineX, lineEndY);
+                this.ctx.stroke();
+                
+                // Instruction panel background
+                const text = 'Click on the red line to place turret';
+                this.ctx.font = 'bold 20px Arial';
+                this.ctx.textAlign = 'center';
+                const textWidth = this.ctx.measureText(text).width;
+                
+                // Panel background with gradient
+                const panelGradient = this.ctx.createLinearGradient(
+                    this.width / 2 - textWidth / 2 - 20, 30,
+                    this.width / 2 + textWidth / 2 + 20, 60
+                );
+                panelGradient.addColorStop(0, 'rgba(0, 0, 0, 0.8)');
+                panelGradient.addColorStop(0.5, 'rgba(0, 0, 0, 0.9)');
+                panelGradient.addColorStop(1, 'rgba(0, 0, 0, 0.8)');
+                
+                this.ctx.fillStyle = panelGradient;
+                this.ctx.fillRect(
+                    this.width / 2 - textWidth / 2 - 20, 
+                    30, 
+                    textWidth + 40, 
+                    35
+                );
+                
+                // Panel border
+                this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+                this.ctx.lineWidth = 2;
+                this.ctx.strokeRect(
+                    this.width / 2 - textWidth / 2 - 20, 
+                    30, 
+                    textWidth + 40, 
+                    35
+                );
+                
+                // Text shadow
+                this.ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+                this.ctx.fillText(text, this.width / 2 + 2, 52);
+                
+                // Main text
+                this.ctx.fillStyle = 'white';
+                this.ctx.fillText(text, this.width / 2, 50);
+            }
+            
+            drawTurretPlacementPreview() {
+                if (!this.mouseX || !this.mouseY) return;
+                
+                const lineX = this.wall.x + this.wall.width + 20;
+                const originalHeight = this.height - 20 - (this.wall.y + 10);
+                const newHeight = originalHeight * 4.375;
+                const lineStartY = this.wall.y + 10 - (newHeight - originalHeight);
+                const lineEndY = this.height - 20;
+                
+                if (Math.abs(this.mouseX - lineX) <= 30 && this.mouseY >= lineStartY && this.mouseY <= lineEndY) {
+                    // Preview range with gradient (semi-transparent)
+                    const rangeGradient = this.ctx.createRadialGradient(
+                        lineX, this.mouseY, 400 * 0.7,
+                        lineX, this.mouseY, 400
+                    );
+                    rangeGradient.addColorStop(0, 'rgba(255, 215, 0, 0.05)');
+                    rangeGradient.addColorStop(0.7, 'rgba(255, 215, 0, 0.15)');
+                    rangeGradient.addColorStop(1, 'rgba(255, 215, 0, 0.25)');
+                    
+                    this.ctx.fillStyle = rangeGradient;
+                    this.ctx.beginPath();
+                    this.ctx.arc(lineX, this.mouseY, 400, 0, Math.PI * 2);
+                    this.ctx.fill();
+                    
+                    this.ctx.strokeStyle = 'rgba(255, 215, 0, 0.5)';
+                    this.ctx.lineWidth = 2;
+                    this.ctx.beginPath();
+                    this.ctx.arc(lineX, this.mouseY, 400, 0, Math.PI * 2);
+                    this.ctx.stroke();
+                    
+                    // Pulsing preview range
+                    const pulseAlpha = 0.2 + 0.1 * Math.sin(Date.now() * 0.003);
+                    this.ctx.strokeStyle = `rgba(255, 215, 0, ${pulseAlpha})`;
+                    this.ctx.lineWidth = 1;
+                    this.ctx.beginPath();
+                    this.ctx.arc(lineX, this.mouseY, 398, 0, Math.PI * 2);
+                    this.ctx.stroke();
+                    
+                    // 3D Preview turret base with metallic gradient (semi-transparent)
+                    const baseGradient = this.ctx.createLinearGradient(
+                        lineX - 15, this.mouseY - 10,
+                        lineX + 15, this.mouseY + 10
+                    );
+                    baseGradient.addColorStop(0, 'rgba(138, 138, 138, 0.8)');
+                    baseGradient.addColorStop(0.3, 'rgba(105, 105, 105, 0.8)');
+                    baseGradient.addColorStop(0.7, 'rgba(80, 80, 80, 0.8)');
+                    baseGradient.addColorStop(1, 'rgba(48, 48, 48, 0.8)');
+                    
+                    // Base with rounded corners
+                    this.ctx.fillStyle = baseGradient;
+                    this.ctx.beginPath();
+                    this.ctx.roundRect(lineX - 15, this.mouseY - 10, 30, 20, 3);
+                    this.ctx.fill();
+                    
+                    // Base edge highlight
+                    this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+                    this.ctx.lineWidth = 1;
+                    this.ctx.beginPath();
+                    this.ctx.roundRect(lineX - 14, this.mouseY - 9, 28, 18, 2);
+                    this.ctx.stroke();
+                    
+                    // Metal plate details
+                    this.ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+                    this.ctx.fillRect(lineX - 12, this.mouseY - 7, 24, 1);
+                    this.ctx.fillRect(lineX - 12, this.mouseY + 6, 24, 1);
+                    
+                    // Preview bolts
+                    const boltPositions = [
+                        { x: lineX - 10, y: this.mouseY - 5 },
+                        { x: lineX + 10, y: this.mouseY - 5 },
+                        { x: lineX - 10, y: this.mouseY + 5 },
+                        { x: lineX + 10, y: this.mouseY + 5 }
+                    ];
+                    
+                    for (const bolt of boltPositions) {
+                        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+                        this.ctx.beginPath();
+                        this.ctx.arc(bolt.x, bolt.y, 1.5, 0, Math.PI * 2);
+                        this.ctx.fill();
+                        
+                        const boltGradient = this.ctx.createRadialGradient(
+                            bolt.x - 0.5, bolt.y - 0.5, 0,
+                            bolt.x, bolt.y, 1.2
+                        );
+                        boltGradient.addColorStop(0, 'rgba(192, 192, 192, 0.8)');
+                        boltGradient.addColorStop(1, 'rgba(96, 96, 96, 0.8)');
+                        
+                        this.ctx.fillStyle = boltGradient;
+                        this.ctx.beginPath();
+                        this.ctx.arc(bolt.x, bolt.y, 1.2, 0, Math.PI * 2);
+                        this.ctx.fill();
+                    }
+                    
+                    // 3D Rotating barrel mount preview
+                    const mountGradient = this.ctx.createRadialGradient(
+                        lineX - 2, this.mouseY - 2, 0,
+                        lineX, this.mouseY, 6
+                    );
+                    mountGradient.addColorStop(0, 'rgba(112, 112, 112, 0.8)');
+                    mountGradient.addColorStop(0.7, 'rgba(80, 80, 80, 0.8)');
+                    mountGradient.addColorStop(1, 'rgba(48, 48, 48, 0.8)');
+                    
+                    this.ctx.fillStyle = mountGradient;
+                    this.ctx.beginPath();
+                    this.ctx.arc(lineX, this.mouseY, 5, 0, Math.PI * 2);
+                    this.ctx.fill();
+                    
+                    // Mount highlight
+                    this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+                    this.ctx.lineWidth = 0.5;
+                    this.ctx.beginPath();
+                    this.ctx.arc(lineX, this.mouseY, 4, -Math.PI/3, -Math.PI/6);
+                    this.ctx.stroke();
+                    
+                    // Preview barrel (pointing upward)
+                    const barrelAngle = -Math.PI / 2;
+                    const barrelEndX = lineX + Math.cos(barrelAngle) * 22;
+                    const barrelEndY = this.mouseY + Math.sin(barrelAngle) * 22;
+                    
+                    const barrelGradient = this.ctx.createLinearGradient(
+                        lineX, this.mouseY,
+                        barrelEndX, barrelEndY
+                    );
+                    barrelGradient.addColorStop(0, 'rgba(79, 95, 95, 0.8)');
+                    barrelGradient.addColorStop(0.3, 'rgba(63, 79, 79, 0.8)');
+                    barrelGradient.addColorStop(0.7, 'rgba(47, 63, 63, 0.8)');
+                    barrelGradient.addColorStop(1, 'rgba(31, 47, 47, 0.8)');
+                    
+                    this.ctx.strokeStyle = barrelGradient;
+                    this.ctx.lineWidth = 7;
+                    this.ctx.lineCap = 'round';
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(lineX, this.mouseY);
+                    this.ctx.lineTo(barrelEndX, barrelEndY);
+                    this.ctx.stroke();
+                    
+                    // Barrel highlight
+                    this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+                    this.ctx.lineWidth = 1.5;
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(
+                        lineX + Math.cos(barrelAngle - 0.15) * 3,
+                        this.mouseY + Math.sin(barrelAngle - 0.15) * 3
+                    );
+                    this.ctx.lineTo(
+                        barrelEndX + Math.cos(barrelAngle - 0.15) * 1,
+                        barrelEndY + Math.sin(barrelAngle - 0.15) * 1
+                    );
+                    this.ctx.stroke();
+                    
+                    // Barrel muzzle
+                    this.ctx.fillStyle = 'rgba(31, 47, 47, 0.8)';
+                    this.ctx.beginPath();
+                    this.ctx.arc(barrelEndX, barrelEndY, 4.5, 0, Math.PI * 2);
+                    this.ctx.fill();
+                    
+                    this.ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+                    this.ctx.beginPath();
+                    this.ctx.arc(barrelEndX, barrelEndY, 2.5, 0, Math.PI * 2);
+                    this.ctx.fill();
+                    
+                    // Level badge preview
+                    const badgeGradient = this.ctx.createRadialGradient(
+                        lineX - 2, this.mouseY + 18, 0,
+                        lineX, this.mouseY + 20, 8
+                    );
+                    badgeGradient.addColorStop(0, 'rgba(255, 215, 0, 0.8)');
+                    badgeGradient.addColorStop(0.7, 'rgba(255, 165, 0, 0.8)');
+                    badgeGradient.addColorStop(1, 'rgba(255, 140, 0, 0.8)');
+                    
+                    this.ctx.fillStyle = badgeGradient;
+                    this.ctx.beginPath();
+                    this.ctx.arc(lineX, this.mouseY + 20, 8, 0, Math.PI * 2);
+                    this.ctx.fill();
+                    
+                    this.ctx.strokeStyle = 'rgba(184, 134, 11, 0.8)';
+                    this.ctx.lineWidth = 1;
+                    this.ctx.beginPath();
+                    this.ctx.arc(lineX, this.mouseY + 20, 8, 0, Math.PI * 2);
+                    this.ctx.stroke();
+                    
+                    // Turret number text with shadow (showing next turret number)
+                    const nextTurretNumber = this.turrets.length + 1;
+                    this.ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+                    this.ctx.font = 'bold 10px Arial';
+                    this.ctx.textAlign = 'center';
+                    this.ctx.textBaseline = 'middle';
+                    this.ctx.fillText(`T${nextTurretNumber}`, lineX + 0.5, this.mouseY + 20.5);
+                    
+                    this.ctx.fillStyle = 'white';
+                    this.ctx.fillText(`T${nextTurretNumber}`, lineX, this.mouseY + 20);
+                }
+            }
+            
+            drawBalloon(balloon) {
+                // Create 3D effect with radial gradient
+                const gradient = this.ctx.createRadialGradient(
+                    balloon.x - balloon.size * 0.3, 
+                    balloon.y - balloon.size * 0.3, 
+                    0,
+                    balloon.x, 
+                    balloon.y, 
+                    balloon.size
+                );
+                
+                // Parse balloon color to create gradient stops
+                let baseColor = balloon.color;
+                let darkColor = this.darkenColor(balloon.color, 0.4);
+                let lightColor = this.lightenColor(balloon.color, 0.3);
+                
+                gradient.addColorStop(0, lightColor);
+                gradient.addColorStop(0.4, baseColor);
+                gradient.addColorStop(1, darkColor);
+                
+                // Draw main balloon body with gradient
+                this.ctx.fillStyle = gradient;
+                this.ctx.beginPath();
+                this.ctx.arc(balloon.x, balloon.y, balloon.size, 0, Math.PI * 2);
+                this.ctx.fill();
+                
+                // Add subtle edge shadow for depth
+                const shadowGradient = this.ctx.createRadialGradient(
+                    balloon.x, balloon.y, balloon.size * 0.8,
+                    balloon.x, balloon.y, balloon.size
+                );
+                shadowGradient.addColorStop(0, 'rgba(0, 0, 0, 0)');
+                shadowGradient.addColorStop(1, 'rgba(0, 0, 0, 0.2)');
+                this.ctx.fillStyle = shadowGradient;
+                this.ctx.beginPath();
+                this.ctx.arc(balloon.x, balloon.y, balloon.size, 0, Math.PI * 2);
+                this.ctx.fill();
+                
+                // Primary highlight (specular reflection)
+                const highlightGradient = this.ctx.createRadialGradient(
+                    balloon.x - balloon.size * 0.3,
+                    balloon.y - balloon.size * 0.3,
+                    0,
+                    balloon.x - balloon.size * 0.2,
+                    balloon.y - balloon.size * 0.2,
+                    balloon.size * 0.5
+                );
+                highlightGradient.addColorStop(0, 'rgba(255, 255, 255, 0.8)');
+                highlightGradient.addColorStop(0.3, 'rgba(255, 255, 255, 0.4)');
+                highlightGradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+                
+                this.ctx.save();
+                this.ctx.beginPath();
+                this.ctx.arc(balloon.x, balloon.y, balloon.size * 0.9, 0, Math.PI * 2);
+                this.ctx.clip();
+                
+                this.ctx.fillStyle = highlightGradient;
+                this.ctx.beginPath();
+                this.ctx.arc(balloon.x - balloon.size * 0.2, balloon.y - balloon.size * 0.2, balloon.size * 0.6, 0, Math.PI * 2);
+                this.ctx.fill();
+                this.ctx.restore();
+                
+                // Secondary smaller highlight for extra shininess
+                this.ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+                this.ctx.beginPath();
+                this.ctx.ellipse(balloon.x - balloon.size * 0.35, balloon.y - balloon.size * 0.4, 
+                    balloon.size * 0.15, balloon.size * 0.1, -Math.PI / 6, 0, Math.PI * 2);
+                this.ctx.fill();
+                
+                // Draw 3D eyes with depth
+                this.ctx.fillStyle = 'white';
+                this.ctx.beginPath();
+                this.ctx.arc(balloon.x - 8, balloon.y - 5, 5, 0, Math.PI * 2);
+                this.ctx.fill();
+                this.ctx.beginPath();
+                this.ctx.arc(balloon.x + 8, balloon.y - 5, 5, 0, Math.PI * 2);
+                this.ctx.fill();
+                
+                // Add eye shadows
+                this.ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+                this.ctx.beginPath();
+                this.ctx.arc(balloon.x - 8, balloon.y - 4, 5, 0, Math.PI * 2);
+                this.ctx.fill();
+                this.ctx.beginPath();
+                this.ctx.arc(balloon.x + 8, balloon.y - 4, 5, 0, Math.PI * 2);
+                this.ctx.fill();
+                
+                // Pupils
+                this.ctx.fillStyle = 'black';
+                this.ctx.beginPath();
+                this.ctx.arc(balloon.x - 8, balloon.y - 5, 2.5, 0, Math.PI * 2);
+                this.ctx.fill();
+                this.ctx.beginPath();
+                this.ctx.arc(balloon.x + 8, balloon.y - 5, 2.5, 0, Math.PI * 2);
+                this.ctx.fill();
+                
+                // Eye highlights
+                this.ctx.fillStyle = 'white';
+                this.ctx.beginPath();
+                this.ctx.arc(balloon.x - 9, balloon.y - 6, 1, 0, Math.PI * 2);
+                this.ctx.fill();
+                this.ctx.beginPath();
+                this.ctx.arc(balloon.x + 7, balloon.y - 6, 1, 0, Math.PI * 2);
+                this.ctx.fill();
+                
+                // Mouth with 3D effect
+                this.ctx.strokeStyle = 'rgba(0, 0, 0, 0.8)';
+                this.ctx.lineWidth = 2.5;
+                this.ctx.beginPath();
+                this.ctx.arc(balloon.x, balloon.y + 8, 6, 0, Math.PI);
+                this.ctx.stroke();
+                
+                // String with shadow
+                this.ctx.strokeStyle = 'rgba(0, 0, 0, 0.2)';
+                this.ctx.lineWidth = 3;
+                this.ctx.beginPath();
+                this.ctx.moveTo(balloon.x + 1, balloon.y + balloon.size);
+                this.ctx.lineTo(balloon.x + 1, balloon.y + balloon.size + 20);
+                this.ctx.stroke();
+                
+                this.ctx.strokeStyle = '#8B4513';
+                this.ctx.lineWidth = 2;
+                this.ctx.beginPath();
+                this.ctx.moveTo(balloon.x, balloon.y + balloon.size);
+                this.ctx.lineTo(balloon.x, balloon.y + balloon.size + 20);
+                this.ctx.stroke();
+                
+                // Special rendering for super armored balloon - add helmet
+                if (balloon.type === 'superarmored') {
+                    // Metal helmet base
+                    this.ctx.fillStyle = '#34495E';
+                    this.ctx.beginPath();
+                    this.ctx.ellipse(balloon.x, balloon.y - balloon.size * 0.6, 
+                        balloon.size * 0.8, balloon.size * 0.5, 0, Math.PI, 0);
+                    this.ctx.fill();
+                    
+                    // Helmet shine
+                    const helmetGradient = this.ctx.createLinearGradient(
+                        balloon.x - balloon.size * 0.6, balloon.y - balloon.size * 0.8,
+                        balloon.x + balloon.size * 0.6, balloon.y - balloon.size * 0.4
+                    );
+                    helmetGradient.addColorStop(0, '#5D6D7E');
+                    helmetGradient.addColorStop(0.5, '#85929E');
+                    helmetGradient.addColorStop(1, '#34495E');
+                    
+                    this.ctx.fillStyle = helmetGradient;
+                    this.ctx.beginPath();
+                    this.ctx.ellipse(balloon.x, balloon.y - balloon.size * 0.6, 
+                        balloon.size * 0.75, balloon.size * 0.45, 0, Math.PI, 0);
+                    this.ctx.fill();
+                    
+                    // Helmet spike on top
+                    this.ctx.fillStyle = '#2C3E50';
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(balloon.x - 5, balloon.y - balloon.size * 0.9);
+                    this.ctx.lineTo(balloon.x, balloon.y - balloon.size * 1.1);
+                    this.ctx.lineTo(balloon.x + 5, balloon.y - balloon.size * 0.9);
+                    this.ctx.closePath();
+                    this.ctx.fill();
+                    
+                    // Helmet strap
+                    this.ctx.strokeStyle = '#1C2833';
+                    this.ctx.lineWidth = 2;
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(balloon.x - balloon.size * 0.6, balloon.y - balloon.size * 0.4);
+                    this.ctx.quadraticCurveTo(balloon.x, balloon.y, 
+                        balloon.x + balloon.size * 0.6, balloon.y - balloon.size * 0.4);
+                    this.ctx.stroke();
+                }
+                
+                // Special rendering for stealth balloon - flickering effect
+                if (balloon.type === 'stealth') {
+                    // Create flickering opacity effect
+                    const flicker = Math.sin(Date.now() * 0.005 + balloon.x) * 0.3 + 0.3;
+                    this.ctx.globalAlpha = flicker;
+                    
+                    // Draw distortion waves around balloon
+                    this.ctx.strokeStyle = 'rgba(149, 165, 166, 0.3)';
+                    this.ctx.lineWidth = 1;
+                    for (let i = 1; i <= 3; i++) {
+                        this.ctx.beginPath();
+                        this.ctx.arc(balloon.x, balloon.y, balloon.size + i * 8, 0, Math.PI * 2);
+                        this.ctx.stroke();
+                    }
+                    
+                    this.ctx.globalAlpha = 1;
+                }
+                
+                if (balloon.hp < balloon.maxHP) {
+                    const barWidth = balloon.size * 1.5;
+                    const hpPercentage = balloon.hp / balloon.maxHP;
+                    
+                    this.ctx.fillStyle = 'red';
+                    this.ctx.fillRect(balloon.x - barWidth/2, balloon.y - balloon.size - 15, barWidth, 4);
+                    this.ctx.fillStyle = 'green';
+                    this.ctx.fillRect(balloon.x - barWidth/2, balloon.y - balloon.size - 15, barWidth * hpPercentage, 4);
+                }
+                
+                // Special balloon type effects with 3D enhancements
+                if (balloon.type === 'armored') {
+                    // Metallic armor ring with gradient
+                    const armorGradient = this.ctx.createLinearGradient(
+                        balloon.x - balloon.size, balloon.y - balloon.size,
+                        balloon.x + balloon.size, balloon.y + balloon.size
+                    );
+                    armorGradient.addColorStop(0, '#E0E0E0');
+                    armorGradient.addColorStop(0.5, '#C0C0C0');
+                    armorGradient.addColorStop(1, '#808080');
+                    
+                    this.ctx.strokeStyle = armorGradient;
+                    this.ctx.lineWidth = 4;
+                    this.ctx.beginPath();
+                    this.ctx.arc(balloon.x, balloon.y, balloon.size + 3, 0, Math.PI * 2);
+                    this.ctx.stroke();
+                    
+                    // Metallic shine on armor
+                    this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+                    this.ctx.lineWidth = 1;
+                    this.ctx.beginPath();
+                    this.ctx.arc(balloon.x, balloon.y, balloon.size + 4, -Math.PI/3, -Math.PI/6);
+                    this.ctx.stroke();
+                } else if (balloon.type === 'heavy') {
+                    // Metallic armor with weight indicator
+                    const armorGradient = this.ctx.createLinearGradient(
+                        balloon.x - balloon.size, balloon.y - balloon.size,
+                        balloon.x + balloon.size, balloon.y + balloon.size
+                    );
+                    armorGradient.addColorStop(0, '#D0D0D0');
+                    armorGradient.addColorStop(0.5, '#A0A0A0');
+                    armorGradient.addColorStop(1, '#707070');
+                    
+                    this.ctx.strokeStyle = armorGradient;
+                    this.ctx.lineWidth = 4;
+                    this.ctx.beginPath();
+                    this.ctx.arc(balloon.x, balloon.y, balloon.size + 3, 0, Math.PI * 2);
+                    this.ctx.stroke();
+                    
+                    // 3D weight emblem
+                    const weightGradient = this.ctx.createRadialGradient(
+                        balloon.x - 3, balloon.y - balloon.size * 0.5 - 3,
+                        0,
+                        balloon.x, balloon.y - balloon.size * 0.5,
+                        balloon.size * 0.4
+                    );
+                    weightGradient.addColorStop(0, '#C0C0C0');
+                    weightGradient.addColorStop(0.7, '#808080');
+                    weightGradient.addColorStop(1, '#505050');
+                    
+                    this.ctx.fillStyle = weightGradient;
+                    this.ctx.beginPath();
+                    this.ctx.arc(balloon.x, balloon.y - balloon.size * 0.5, balloon.size * 0.4, 0, Math.PI * 2);
+                    this.ctx.fill();
+                    
+                    // Weight text with shadow
+                    this.ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+                    this.ctx.font = `bold ${balloon.size * 0.3}px Arial`;
+                    this.ctx.textAlign = 'center';
+                    this.ctx.fillText('W', balloon.x + 1, balloon.y - balloon.size * 0.42);
+                    this.ctx.fillStyle = 'white';
+                    this.ctx.fillText('W', balloon.x, balloon.y - balloon.size * 0.43);
+                } else if (balloon.type === 'giant') {
+                    // Double metallic rings with 3D effect
+                    const armorGradient1 = this.ctx.createLinearGradient(
+                        balloon.x - balloon.size, balloon.y - balloon.size,
+                        balloon.x + balloon.size, balloon.y + balloon.size
+                    );
+                    armorGradient1.addColorStop(0, '#F0F0F0');
+                    armorGradient1.addColorStop(0.5, '#C0C0C0');
+                    armorGradient1.addColorStop(1, '#808080');
+                    
+                    this.ctx.strokeStyle = armorGradient1;
+                    this.ctx.lineWidth = 5;
+                    this.ctx.beginPath();
+                    this.ctx.arc(balloon.x, balloon.y, balloon.size + 3, 0, Math.PI * 2);
+                    this.ctx.stroke();
+                    
+                    const armorGradient2 = this.ctx.createLinearGradient(
+                        balloon.x - balloon.size, balloon.y - balloon.size,
+                        balloon.x + balloon.size, balloon.y + balloon.size
+                    );
+                    armorGradient2.addColorStop(0, '#FFE4B5');
+                    armorGradient2.addColorStop(0.5, '#FFD700');
+                    armorGradient2.addColorStop(1, '#B8860B');
+                    
+                    this.ctx.strokeStyle = armorGradient2;
+                    this.ctx.lineWidth = 3;
+                    this.ctx.beginPath();
+                    this.ctx.arc(balloon.x, balloon.y, balloon.size + 7, 0, Math.PI * 2);
+                    this.ctx.stroke();
+                    
+                    // 3D crown with gradient
+                    const crownGradient = this.ctx.createLinearGradient(
+                        balloon.x - 8, balloon.y - balloon.size * 0.7 - 4,
+                        balloon.x + 8, balloon.y - balloon.size * 0.7 + 8
+                    );
+                    crownGradient.addColorStop(0, '#FFEF94');
+                    crownGradient.addColorStop(0.5, '#FFD700');
+                    crownGradient.addColorStop(1, '#B8860B');
+                    
+                    this.ctx.fillStyle = crownGradient;
+                    this.ctx.fillRect(balloon.x - 8, balloon.y - balloon.size * 0.7, 16, 8);
+                    for (let i = 0; i < 3; i++) {
+                        this.ctx.fillRect(balloon.x - 6 + i * 6, balloon.y - balloon.size * 0.7 - 4, 4, 6);
+                    }
+                    
+                    // Crown jewels
+                    this.ctx.fillStyle = '#FF1493';
+                    this.ctx.beginPath();
+                    this.ctx.arc(balloon.x, balloon.y - balloon.size * 0.66, 2, 0, Math.PI * 2);
+                    this.ctx.fill();
+                } else if (balloon.type === 'speed') {
+                    // Speed lines with gradient effect
+                    for (let i = 0; i < 3; i++) {
+                        const speedGradient = this.ctx.createLinearGradient(
+                            balloon.x + balloon.size + 5 + i * 8, balloon.y - 5 + i * 3,
+                            balloon.x + balloon.size + 20 + i * 8, balloon.y - 5 + i * 3
+                        );
+                        
+                        if (balloon.hasSpeedBoost) {
+                            speedGradient.addColorStop(0, 'rgba(255, 100, 100, 0.9)');
+                            speedGradient.addColorStop(1, 'rgba(255, 200, 200, 0.2)');
+                        } else {
+                            speedGradient.addColorStop(0, 'rgba(255, 255, 255, 0.8)');
+                            speedGradient.addColorStop(1, 'rgba(255, 255, 255, 0.1)');
+                        }
+                        
+                        this.ctx.strokeStyle = speedGradient;
+                        this.ctx.lineWidth = balloon.hasSpeedBoost ? 3 - i * 0.5 : 2 - i * 0.3;
+                        this.ctx.beginPath();
+                        this.ctx.moveTo(balloon.x + balloon.size + 5 + i * 8, balloon.y - 5 + i * 3);
+                        this.ctx.lineTo(balloon.x + balloon.size + 20 + i * 8, balloon.y - 5 + i * 3);
+                        this.ctx.stroke();
+                    }
+                    
+                    if (balloon.hasSpeedBoost) {
+                        // Energy aura with gradient
+                        const auraGradient = this.ctx.createRadialGradient(
+                            balloon.x, balloon.y, balloon.size,
+                            balloon.x, balloon.y, balloon.size + 8
+                        );
+                        auraGradient.addColorStop(0, 'rgba(255, 0, 0, 0)');
+                        auraGradient.addColorStop(0.7, 'rgba(255, 50, 50, 0.3)');
+                        auraGradient.addColorStop(1, 'rgba(255, 100, 100, 0.6)');
+                        
+                        this.ctx.fillStyle = auraGradient;
+                        this.ctx.beginPath();
+                        this.ctx.arc(balloon.x, balloon.y, balloon.size + 8, 0, Math.PI * 2);
+                        this.ctx.fill();
+                    }
+                }
+            }
+            
+            updateUI() {
+                document.getElementById('coins').textContent = this.coins;
+                document.getElementById('houseHP').textContent = Math.max(0, this.houseHP);
+                document.getElementById('wave').textContent = this.wave;
+                document.getElementById('gunLevel').textContent = this.player.gunLevel;
+                document.getElementById('currentDifficulty').textContent = 
+                    this.difficulty.charAt(0).toUpperCase() + this.difficulty.slice(1);
+                
+                // Update balloon strength indicator
+                const balloonStrength = 1 + Math.floor(this.wave / 10);
+                document.getElementById('balloonStrength').textContent = balloonStrength;
+                
+                if (this.turrets.length === 0) {
+                    document.getElementById('turretInfo').textContent = 'None';
+                } else {
+                    document.getElementById('turretInfo').textContent = `${this.turrets.length} turrets`;
+                }
+                
+                const remainingEnemies = this.waveActive ? 
+                    (this.enemiesInWave - this.enemiesSpawned) + this.balloons.length : 
+                    this.balloons.length;
+                document.getElementById('enemiesLeft').textContent = Math.max(0, remainingEnemies);
+            }
+            
+            gameOver() {
+                this.gameRunning = false;
+                document.getElementById('finalCoins').textContent = this.coins;
+                document.getElementById('finalWave').textContent = this.wave - 1;
+                document.getElementById('gameOver').style.display = 'block';
+            }
+            
+            gameLoop() {
+                this.update();
+                this.render();
+                requestAnimationFrame(() => this.gameLoop());
+            }
+        }
+    </script>
+</body>
+</html>
