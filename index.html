@@ -395,7 +395,7 @@
         
         <div class="ui-right">
             <div>Gun Level: <span id="gunLevel">1</span></div>
-            <div>Turrets: <span id="turretInfo">None</span></div>
+            <div>Turret Strength: <span id="turretStrength">1</span></div>
             <div>Difficulty: <span id="currentDifficulty">Normal</span></div>
             <div>Balloon Strength: <span id="balloonStrength">1</span></div>
         </div>
@@ -533,6 +533,10 @@
                 this.turrets = [];
                 this.particles = [];
                 this.coinParticles = [];
+                
+                // Turret upgrade properties
+                this.turretStrength = 1;
+                this.turretUpgradeCost = 300;
                 
                 this.generateRandomVegetation();
                 
@@ -957,11 +961,13 @@
                             
                             if (distance < turret.range) {
                                 const angle = Math.atan2(dy, dx);
+                                // Apply turret strength multiplier (50% increase per level)
+                                const turretDamage = turret.damage * Math.pow(1.5, this.turretStrength - 1);
                                 this.bullets.push({
                                     x: turret.x, y: turret.y,
                                     vx: Math.cos(angle) * 12,
                                     vy: Math.sin(angle) * 12,
-                                    damage: turret.damage
+                                    damage: turretDamage
                                 });
                                 turret.lastShot = now;
                             }
@@ -1041,11 +1047,17 @@
                 gunBtn.disabled = this.coins < this.upgradeCosts.gun;
                 houseBtn.disabled = this.coins < this.upgradeCosts.house;
                 
-                // Hide turret button if player already has 3 turrets
+                // Change turret button to upgrade turrets when player has 3 turrets
                 if (this.turrets.length >= 3) {
-                    turretBtn.style.display = 'none';
-                } else {
+                    // Show "Upgrade Turrets" button
                     turretBtn.style.display = 'block';
+                    turretBtn.querySelector('span:first-child').textContent = 'Upgrade Turrets';
+                    turretBtn.disabled = this.coins < this.turretUpgradeCost;
+                    document.getElementById('turretCost').textContent = this.turretUpgradeCost;
+                } else {
+                    // Show "Buy Turret" button
+                    turretBtn.style.display = 'block';
+                    turretBtn.querySelector('span:first-child').textContent = 'Buy Turret';
                     turretBtn.disabled = this.coins < this.upgradeCosts.turret;
                     document.getElementById('turretCost').textContent = this.upgradeCosts.turret;
                 }
@@ -1080,11 +1092,22 @@
             }
             
             buyTurret() {
-                if (this.coins >= this.upgradeCosts.turret && this.turrets.length < 3) {
-                    this.coins -= this.upgradeCosts.turret;
-                    this.placingTurret = true;
-                    document.getElementById('shop').style.display = 'none';
-                    this.upgradeCosts.turret = Math.floor(this.upgradeCosts.turret * 1.4);
+                if (this.turrets.length >= 3) {
+                    // Upgrade turrets
+                    if (this.coins >= this.turretUpgradeCost) {
+                        this.coins -= this.turretUpgradeCost;
+                        this.turretStrength++;
+                        this.turretUpgradeCost = Math.floor(this.turretUpgradeCost * 1.5);
+                        this.updateShopButtons();
+                    }
+                } else {
+                    // Buy new turret
+                    if (this.coins >= this.upgradeCosts.turret) {
+                        this.coins -= this.upgradeCosts.turret;
+                        this.placingTurret = true;
+                        document.getElementById('shop').style.display = 'none';
+                        this.upgradeCosts.turret = Math.floor(this.upgradeCosts.turret * 1.4);
+                    }
                 }
             }
             
@@ -2672,6 +2695,7 @@
                 document.getElementById('houseHP').textContent = Math.max(0, this.houseHP);
                 document.getElementById('wave').textContent = this.wave;
                 document.getElementById('gunLevel').textContent = this.player.gunLevel;
+                document.getElementById('turretStrength').textContent = this.turretStrength;
                 document.getElementById('currentDifficulty').textContent = 
                     this.difficulty.charAt(0).toUpperCase() + this.difficulty.slice(1);
                 
@@ -2679,11 +2703,7 @@
                 const balloonStrength = 1 + Math.floor(this.wave / 10);
                 document.getElementById('balloonStrength').textContent = balloonStrength;
                 
-                if (this.turrets.length === 0) {
-                    document.getElementById('turretInfo').textContent = 'None';
-                } else {
-                    document.getElementById('turretInfo').textContent = `${this.turrets.length} turrets`;
-                }
+                // Turret info display removed
                 
                 const remainingEnemies = this.waveActive ? 
                     (this.enemiesInWave - this.enemiesSpawned) + this.balloons.length : 
