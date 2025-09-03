@@ -40,7 +40,7 @@
         
         .ui {
             position: absolute;
-            top: 20px;
+            top: 70px;
             left: 20px;
             color: white;
             font-size: 18px;
@@ -87,6 +87,40 @@
         .game-buttons button:hover {
             background: rgba(255,255,255,0.2);
             transform: translateX(5px);
+        }
+        
+        .language-switcher {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 300;
+            display: flex;
+            gap: 5px;
+            background: rgba(0,0,0,0.7);
+            padding: 5px;
+            border-radius: 8px;
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+        
+        .language-btn {
+            padding: 8px 12px;
+            font-size: 14px;
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+        
+        .language-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        
+        .language-btn.active {
+            background: rgba(76, 175, 80, 0.8);
+            border-color: #4CAF50;
         }
         
         .difficulty-menu {
@@ -353,12 +387,22 @@
             transform: translateY(-50%);
         }
     </style>
+    <!-- Translation files -->
+    <script src="translations/en.js"></script>
+    <script src="translations/de.js"></script>
+    <script src="translations/ro.js"></script>
     <script src="index.js"></script> 
 </head>
 <body>
     <div class="game-container" id="gameContainer">
         <canvas id="gameCanvas"></canvas>
         <div class="crosshair" id="crosshair"></div>
+        
+        <div class="language-switcher">
+            <button class="language-btn" onclick="switchLanguage('en')" id="lang-en">EN</button>
+            <button class="language-btn" onclick="switchLanguage('de')" id="lang-de">DE</button>
+            <button class="language-btn" onclick="switchLanguage('ro')" id="lang-ro">RO</button>
+        </div>
         
         <div class="difficulty-popup" id="difficultyPopup">
             <h2>Balloon Trouble!</h2>
@@ -387,17 +431,17 @@
         </div>
         
         <div class="ui">
-            <div>Coins: <span id="coins">0</span></div>
-            <div>House HP: <span id="houseHP">100</span></div>
-            <div>Wave: <span id="wave">1</span></div>
-            <div>Enemies Left: <span id="enemiesLeft">5</span></div>
+            <div id="coins-label">Coins: <span id="coins">0</span></div>
+            <div id="house-hp-label">House HP: <span id="houseHP">100</span></div>
+            <div id="wave-label">Wave: <span id="wave">1</span></div>
+            <div id="enemies-left-label">Enemies Left: <span id="enemiesLeft">5</span></div>
         </div>
         
         <div class="ui-right">
-            <div>Gun Level: <span id="gunLevel">1</span></div>
-            <div>Turret Strength: <span id="turretStrength">1</span></div>
-            <div>Difficulty: <span id="currentDifficulty">Normal</span></div>
-            <div>Balloon Strength: <span id="balloonStrength">1</span></div>
+            <div id="gun-level-label">Gun Level: <span id="gunLevel">1</span></div>
+            <div id="turret-strength-label">Turret Strength: <span id="turretStrength">1</span></div>
+            <div id="difficulty-label">Difficulty: <span id="currentDifficulty">Normal</span></div>
+            <div id="balloon-strength-label">Balloon Strength: <span id="balloonStrength">1</span></div>
         </div>
         
         <div class="game-buttons">
@@ -440,14 +484,105 @@
         
         <div class="game-over" id="gameOver">
             <h2>Game Over!</h2>
-            <p>Final Coins: <span id="finalCoins">0</span></p>
-            <p>Waves Survived: <span id="finalWave">0</span></p>
+            <p id="final-coins-label">Final Coins: <span id="finalCoins">0</span></p>
+            <p id="waves-survived-label">Waves Survived: <span id="finalWave">0</span></p>
             <button class="restart-btn" id="restartBtn">Play Again</button>
         </div>
     </div>
     <script>
+        // Translation system
+        let currentLanguage = localStorage.getItem('gameLanguage') || 'en';
+        let t = window.translations[currentLanguage];
+        
+        function setLanguage(lang) {
+            currentLanguage = lang;
+            localStorage.setItem('gameLanguage', lang);
+            t = window.translations[lang];
+            updateUITranslations();
+        }
+        
+        function translate(key, params = {}) {
+            let text = t[key] || key;
+            // Replace template variables like {{wave}}
+            Object.keys(params).forEach(param => {
+                text = text.replace(`{{${param}}}`, params[param]);
+            });
+            return text;
+        }
+        
+        function switchLanguage(lang) {
+            setLanguage(lang);
+            updateLanguageButtons();
+            if (game) {
+                // Force update of any dynamic content if game is running
+                game.updateDynamicTranslations();
+            }
+        }
+        
+        function updateLanguageButtons() {
+            document.querySelectorAll('.language-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.getElementById('lang-' + currentLanguage).classList.add('active');
+        }
+        
+        function updateUITranslations() {
+            // Update static HTML elements
+            document.querySelector('#difficultyPopup h2').textContent = t.gameTitle;
+            document.querySelector('#difficultyPopup p').textContent = t.selectDifficulty;
+            document.querySelector('#difficultyPopup > div:nth-child(4)').innerHTML = t.donationMessage;
+            
+            document.getElementById('easyStart').textContent = t.easy;
+            document.getElementById('normalStart').textContent = t.normal;
+            document.getElementById('hardStart').textContent = t.hard;
+            
+            document.getElementById('pauseBtn').textContent = t.pause;
+            document.getElementById('difficultyBtn').textContent = t.difficulty;
+            
+            document.querySelector('#difficultyMenu h3').textContent = t.chooseDifficulty;
+            document.getElementById('easyBtn').textContent = t.easy;
+            document.getElementById('normalBtn').textContent = t.normal;
+            document.getElementById('hardBtn').textContent = t.hard;
+            document.getElementById('closeDifficultyBtn').textContent = t.close;
+            
+            document.querySelector('#shop h2').textContent = t.upgradeShop;
+            document.querySelector('#upgradeGun span:first-child').textContent = t.upgradeGun;
+            document.querySelector('#reinforceHouse span:first-child').textContent = t.reinforceHouse;
+            document.querySelector('#repairHouse span:first-child').textContent = t.repairHouse;
+            document.getElementById('closeShop').textContent = t.nextLevel;
+            
+            document.querySelector('#gameOver h2').textContent = t.gameOver;
+            document.getElementById('restartBtn').textContent = t.playAgain;
+            
+            // Update UI labels using their IDs
+            document.getElementById('coins-label').innerHTML = t.coins + ': <span id="coins">' + (document.getElementById('coins')?.textContent || '0') + '</span>';
+            document.getElementById('house-hp-label').innerHTML = t.houseHP + ': <span id="houseHP">' + (document.getElementById('houseHP')?.textContent || '100') + '</span>';
+            document.getElementById('wave-label').innerHTML = t.wave + ': <span id="wave">' + (document.getElementById('wave')?.textContent || '1') + '</span>';
+            document.getElementById('enemies-left-label').innerHTML = t.enemiesLeft + ': <span id="enemiesLeft">' + (document.getElementById('enemiesLeft')?.textContent || '5') + '</span>';
+            document.getElementById('gun-level-label').innerHTML = t.gunLevel + ': <span id="gunLevel">' + (document.getElementById('gunLevel')?.textContent || '1') + '</span>';
+            document.getElementById('turret-strength-label').innerHTML = t.turretStrength + ': <span id="turretStrength">' + (document.getElementById('turretStrength')?.textContent || '1') + '</span>';
+            document.getElementById('difficulty-label').innerHTML = t.difficulty + ': <span id="currentDifficulty">' + (document.getElementById('currentDifficulty')?.textContent || 'Normal') + '</span>';
+            document.getElementById('balloon-strength-label').innerHTML = t.balloonStrength + ': <span id="balloonStrength">' + (document.getElementById('balloonStrength')?.textContent || '1') + '</span>';
+            document.getElementById('final-coins-label').innerHTML = t.finalCoins + ': <span id="finalCoins">' + (document.getElementById('finalCoins')?.textContent || '0') + '</span>';
+            document.getElementById('waves-survived-label').innerHTML = t.wavesSurvived + ': <span id="finalWave">' + (document.getElementById('finalWave')?.textContent || '0') + '</span>';
+            
+            // Update cost labels
+            document.querySelectorAll('button span').forEach(span => {
+                if (span.textContent.includes('Cost:')) {
+                    let costSpan = span.querySelector('span');
+                    if (costSpan) {
+                        let costValue = costSpan.textContent;
+                        span.innerHTML = t.cost + ': <span id="' + costSpan.id + '">' + costValue + '</span>';
+                    }
+                }
+            });
+        }
+        
         let selectedDifficulty = 'normal';
         let game;
+        
+        // Initialize language buttons
+        updateLanguageButtons();
         
         // Set up startup popup event listeners immediately
         document.getElementById('easyStart').addEventListener('click', () => startGame('easy'));
@@ -490,6 +625,24 @@
                 this.canvas.height = rect.height;
                 this.width = this.canvas.width;
                 this.height = this.canvas.height;
+            }
+            
+            updateDynamicTranslations() {
+                // Update shop button text if shop is open
+                if (document.getElementById('shop').style.display !== 'none') {
+                    const turretBtn = document.getElementById('buyTurret');
+                    if (this.turrets.length >= 3) {
+                        turretBtn.querySelector('span:first-child').textContent = t.upgradeTurrets;
+                    } else {
+                        turretBtn.querySelector('span:first-child').textContent = t.buyTurret;
+                    }
+                    
+                    // Update cost labels
+                    document.querySelector('#gunCost').parentElement.innerHTML = t.cost + ': <span id="gunCost">' + document.getElementById('gunCost').textContent + '</span>';
+                    document.querySelector('#houseCost').parentElement.innerHTML = t.cost + ': <span id="houseCost">' + document.getElementById('houseCost').textContent + '</span>';
+                    document.querySelector('#turretCost').parentElement.innerHTML = t.cost + ': <span id="turretCost">' + document.getElementById('turretCost').textContent + '</span>';
+                    document.querySelector('#repairCost').parentElement.innerHTML = t.cost + ': <span id="repairCost">' + document.getElementById('repairCost').textContent + '</span>';
+                }
             }
             
             init() {
@@ -1051,13 +1204,13 @@
                 if (this.turrets.length >= 3) {
                     // Show "Upgrade Turrets" button
                     turretBtn.style.display = 'block';
-                    turretBtn.querySelector('span:first-child').textContent = 'Upgrade Turrets';
+                    turretBtn.querySelector('span:first-child').textContent = t.upgradeTurrets;
                     turretBtn.disabled = this.coins < this.turretUpgradeCost;
                     document.getElementById('turretCost').textContent = this.turretUpgradeCost;
                 } else {
                     // Show "Buy Turret" button
                     turretBtn.style.display = 'block';
-                    turretBtn.querySelector('span:first-child').textContent = 'Buy Turret';
+                    turretBtn.querySelector('span:first-child').textContent = t.buyTurret;
                     turretBtn.disabled = this.coins < this.upgradeCosts.turret;
                     document.getElementById('turretCost').textContent = this.upgradeCosts.turret;
                 }
@@ -1146,7 +1299,7 @@
             
             togglePause() {
                 this.paused = !this.paused;
-                document.getElementById('pauseBtn').textContent = this.paused ? 'Resume' : 'Pause';
+                document.getElementById('pauseBtn').textContent = this.paused ? t.resume : t.pause;
             }
             
             showDifficultyMenu() {
@@ -2074,10 +2227,10 @@
                 this.ctx.font = 'bold 10px Arial';
                 this.ctx.textAlign = 'center';
                 this.ctx.textBaseline = 'middle';
-                this.ctx.fillText(`T${turretNumber}`, turret.x + 0.5, turret.y + 20.5);
+                this.ctx.fillText(translate('turretLabel', {number: turretNumber}), turret.x + 0.5, turret.y + 20.5);
                 
                 this.ctx.fillStyle = 'white';
-                this.ctx.fillText(`T${turretNumber}`, turret.x, turret.y + 20);
+                this.ctx.fillText(translate('turretLabel', {number: turretNumber}), turret.x, turret.y + 20);
             }
             
             drawTurretPlacementLine() {
@@ -2103,7 +2256,7 @@
                 this.ctx.stroke();
                 
                 // Instruction panel background
-                const text = 'Click on the red line to place turret';
+                const text = t.clickToPlaceTurret;
                 this.ctx.font = 'bold 20px Arial';
                 this.ctx.textAlign = 'center';
                 const textWidth = this.ctx.measureText(text).width;
@@ -2331,10 +2484,10 @@
                     this.ctx.font = 'bold 10px Arial';
                     this.ctx.textAlign = 'center';
                     this.ctx.textBaseline = 'middle';
-                    this.ctx.fillText(`T${nextTurretNumber}`, lineX + 0.5, this.mouseY + 20.5);
+                    this.ctx.fillText(translate('turretLabel', {number: nextTurretNumber}), lineX + 0.5, this.mouseY + 20.5);
                     
                     this.ctx.fillStyle = 'white';
-                    this.ctx.fillText(`T${nextTurretNumber}`, lineX, this.mouseY + 20);
+                    this.ctx.fillText(translate('turretLabel', {number: nextTurretNumber}), lineX, this.mouseY + 20);
                 }
             }
             
