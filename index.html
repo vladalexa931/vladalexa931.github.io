@@ -459,24 +459,24 @@
         </div>
         
         <div class="shop" id="shop">
-            <h2>Upgrade Shop</h2>
-            <p class="shop-coins">Coins: <span id="shopCoins">0</span></p>
+            <h2 id="shop-title">Upgrade Shop</h2>
+            <p class="shop-coins" id="shop-coins-label">Coins: <span id="shopCoins">0</span></p>
             <div class="shop-grid">
                 <button id="upgradeGun">
-                    <span>Upgrade Gun</span>
-                    <span>Cost: <span id="gunCost">50</span></span>
+                    <span id="upgrade-gun-text">Upgrade Gun</span>
+                    <span id="gun-cost-label">Cost: <span id="gunCost">50</span></span>
                 </button>
                 <button id="reinforceHouse">
-                    <span>Reinforce House</span>
-                    <span>Cost: <span id="houseCost">30</span></span>
+                    <span id="reinforce-house-text">Reinforce House</span>
+                    <span id="house-cost-label">Cost: <span id="houseCost">30</span></span>
                 </button>
                 <button id="buyTurret">
-                    <span>Buy Turret</span>
-                    <span>Cost: <span id="turretCost">100</span></span>
+                    <span id="turret-button-text">Buy Turret</span>
+                    <span id="turret-cost-label">Cost: <span id="turretCost">100</span></span>
                 </button>
                 <button id="repairHouse">
-                    <span>Repair House</span>
-                    <span>Cost: <span id="repairCost">20</span></span>
+                    <span id="repair-house-text">Repair House</span>
+                    <span id="repair-cost-label">Cost: <span id="repairCost">20</span></span>
                 </button>
             </div>
             <button id="closeShop" class="shop-continue">Next Level</button>
@@ -490,7 +490,7 @@
         </div>
     </div>
     <script>
-        // Translation system
+        // Translation system - always start with English unless there is a setting persisted in the local storage.
         let currentLanguage = localStorage.getItem('gameLanguage') || 'en';
         let t = window.translations[currentLanguage];
         
@@ -545,10 +545,12 @@
             document.getElementById('hardBtn').textContent = t.hard;
             document.getElementById('closeDifficultyBtn').textContent = t.close;
             
-            document.querySelector('#shop h2').textContent = t.upgradeShop;
-            document.querySelector('#upgradeGun span:first-child').textContent = t.upgradeGun;
-            document.querySelector('#reinforceHouse span:first-child').textContent = t.reinforceHouse;
-            document.querySelector('#repairHouse span:first-child').textContent = t.repairHouse;
+            document.getElementById('shop-title').textContent = t.upgradeShop;
+            document.getElementById('shop-coins-label').innerHTML = t.coins + ': <span id="shopCoins">' + (document.getElementById('shopCoins')?.textContent || '0') + '</span>';
+            document.getElementById('upgrade-gun-text').textContent = t.upgradeGun;
+            document.getElementById('reinforce-house-text').textContent = t.reinforceHouse;
+            document.getElementById('repair-house-text').textContent = t.repairHouse;
+            document.getElementById('turret-button-text').textContent = t.buyTurret; // Default to "Buy Turret"
             document.getElementById('closeShop').textContent = t.nextLevel;
             
             document.querySelector('#gameOver h2').textContent = t.gameOver;
@@ -566,16 +568,11 @@
             document.getElementById('final-coins-label').innerHTML = t.finalCoins + ': <span id="finalCoins">' + (document.getElementById('finalCoins')?.textContent || '0') + '</span>';
             document.getElementById('waves-survived-label').innerHTML = t.wavesSurvived + ': <span id="finalWave">' + (document.getElementById('finalWave')?.textContent || '0') + '</span>';
             
-            // Update cost labels
-            document.querySelectorAll('button span').forEach(span => {
-                if (span.textContent.includes('Cost:')) {
-                    let costSpan = span.querySelector('span');
-                    if (costSpan) {
-                        let costValue = costSpan.textContent;
-                        span.innerHTML = t.cost + ': <span id="' + costSpan.id + '">' + costValue + '</span>';
-                    }
-                }
-            });
+            // Update cost labels using their IDs
+            document.getElementById('gun-cost-label').innerHTML = t.cost + ': <span id="gunCost">' + (document.getElementById('gunCost')?.textContent || '50') + '</span>';
+            document.getElementById('house-cost-label').innerHTML = t.cost + ': <span id="houseCost">' + (document.getElementById('houseCost')?.textContent || '30') + '</span>';
+            document.getElementById('turret-cost-label').innerHTML = t.cost + ': <span id="turretCost">' + (document.getElementById('turretCost')?.textContent || '100') + '</span>';
+            document.getElementById('repair-cost-label').innerHTML = t.cost + ': <span id="repairCost">' + (document.getElementById('repairCost')?.textContent || '20') + '</span>';
         }
         
         let selectedDifficulty = 'normal';
@@ -630,18 +627,17 @@
             updateDynamicTranslations() {
                 // Update shop button text if shop is open
                 if (document.getElementById('shop').style.display !== 'none') {
-                    const turretBtn = document.getElementById('buyTurret');
                     if (this.turrets.length >= 3) {
-                        turretBtn.querySelector('span:first-child').textContent = t.upgradeTurrets;
+                        document.getElementById('turret-button-text').textContent = t.upgradeTurrets;
                     } else {
-                        turretBtn.querySelector('span:first-child').textContent = t.buyTurret;
+                        document.getElementById('turret-button-text').textContent = t.buyTurret;
                     }
                     
-                    // Update cost labels
-                    document.querySelector('#gunCost').parentElement.innerHTML = t.cost + ': <span id="gunCost">' + document.getElementById('gunCost').textContent + '</span>';
-                    document.querySelector('#houseCost').parentElement.innerHTML = t.cost + ': <span id="houseCost">' + document.getElementById('houseCost').textContent + '</span>';
-                    document.querySelector('#turretCost').parentElement.innerHTML = t.cost + ': <span id="turretCost">' + document.getElementById('turretCost').textContent + '</span>';
-                    document.querySelector('#repairCost').parentElement.innerHTML = t.cost + ': <span id="repairCost">' + document.getElementById('repairCost').textContent + '</span>';
+                    // Update cost labels using IDs
+                    document.getElementById('gun-cost-label').innerHTML = t.cost + ': <span id="gunCost">' + document.getElementById('gunCost').textContent + '</span>';
+                    document.getElementById('house-cost-label').innerHTML = t.cost + ': <span id="houseCost">' + document.getElementById('houseCost').textContent + '</span>';
+                    document.getElementById('turret-cost-label').innerHTML = t.cost + ': <span id="turretCost">' + document.getElementById('turretCost').textContent + '</span>';
+                    document.getElementById('repair-cost-label').innerHTML = t.cost + ': <span id="repairCost">' + document.getElementById('repairCost').textContent + '</span>';
                 }
             }
             
@@ -1204,13 +1200,13 @@
                 if (this.turrets.length >= 3) {
                     // Show "Upgrade Turrets" button
                     turretBtn.style.display = 'block';
-                    turretBtn.querySelector('span:first-child').textContent = t.upgradeTurrets;
+                    document.getElementById('turret-button-text').textContent = t.upgradeTurrets;
                     turretBtn.disabled = this.coins < this.turretUpgradeCost;
                     document.getElementById('turretCost').textContent = this.turretUpgradeCost;
                 } else {
                     // Show "Buy Turret" button
                     turretBtn.style.display = 'block';
-                    turretBtn.querySelector('span:first-child').textContent = t.buyTurret;
+                    document.getElementById('turret-button-text').textContent = t.buyTurret;
                     turretBtn.disabled = this.coins < this.upgradeCosts.turret;
                     document.getElementById('turretCost').textContent = this.upgradeCosts.turret;
                 }
