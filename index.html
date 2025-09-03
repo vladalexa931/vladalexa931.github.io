@@ -40,7 +40,7 @@
         
         .ui {
             position: absolute;
-            top: 70px;
+            top: 105px;
             left: 20px;
             color: white;
             font-size: 18px;
@@ -95,11 +95,17 @@
             left: 20px;
             z-index: 300;
             display: flex;
+            flex-direction: column;
             gap: 5px;
             background: rgba(0,0,0,0.7);
             padding: 5px;
             border-radius: 8px;
             border: 2px solid rgba(255,255,255,0.3);
+        }
+        
+        .language-row {
+            display: flex;
+            gap: 5px;
         }
         
         .language-btn {
@@ -391,6 +397,9 @@
     <script src="translations/en.js"></script>
     <script src="translations/de.js"></script>
     <script src="translations/ro.js"></script>
+    <script src="translations/fr.js"></script>
+    <script src="translations/es.js"></script>
+    <script src="translations/it.js"></script>
     <script src="index.js"></script> 
 </head>
 <body>
@@ -399,9 +408,16 @@
         <div class="crosshair" id="crosshair"></div>
         
         <div class="language-switcher">
-            <button class="language-btn" onclick="switchLanguage('en')" id="lang-en">EN</button>
-            <button class="language-btn" onclick="switchLanguage('de')" id="lang-de">DE</button>
-            <button class="language-btn" onclick="switchLanguage('ro')" id="lang-ro">RO</button>
+            <div class="language-row">
+                <button class="language-btn" onclick="switchLanguage('en')" id="lang-en">EN</button>
+                <button class="language-btn" onclick="switchLanguage('de')" id="lang-de">DE</button>
+                <button class="language-btn" onclick="switchLanguage('ro')" id="lang-ro">RO</button>
+            </div>
+            <div class="language-row">
+                <button class="language-btn" onclick="switchLanguage('fr')" id="lang-fr">FR</button>
+                <button class="language-btn" onclick="switchLanguage('es')" id="lang-es">ES</button>
+                <button class="language-btn" onclick="switchLanguage('it')" id="lang-it">IT</button>
+            </div>
         </div>
         
         <div class="difficulty-popup" id="difficultyPopup">
@@ -494,7 +510,7 @@
         let currentLanguage = localStorage.getItem('gameLanguage') || 'en';
         let t = window.translations[currentLanguage];
         setLanguage(currentLanguage);
-
+        
         function setLanguage(lang) {
             currentLanguage = lang;
             localStorage.setItem('gameLanguage', lang);
