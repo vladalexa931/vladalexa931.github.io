@@ -494,7 +494,7 @@
         let currentLanguage = localStorage.getItem('gameLanguage') || 'en';
         let t = window.translations[currentLanguage];
         setLanguage(currentLanguage);
-        
+
         function setLanguage(lang) {
             currentLanguage = lang;
             localStorage.setItem('gameLanguage', lang);
@@ -1179,7 +1179,10 @@
             waveComplete() {
                 this.waveActive = false;
                 this.wave++;
-                this.showShop();
+                // Add 1 second delay before showing the shop
+                setTimeout(() => {
+                    this.showShop();
+                }, 1000);
             }
             
             showShop() {
