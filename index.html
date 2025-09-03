@@ -493,6 +493,7 @@
         // Translation system - always start with English unless there is a setting persisted in the local storage.
         let currentLanguage = localStorage.getItem('gameLanguage') || 'en';
         let t = window.translations[currentLanguage];
+        setLanguage(currentLanguage);
         
         function setLanguage(lang) {
             currentLanguage = lang;
