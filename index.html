@@ -458,7 +458,6 @@
         <div class="ui-right">
             <div id="gun-level-label">Gun Level: <span id="gunLevel">1</span></div>
             <div id="turret-strength-label">Turret Strength: <span id="turretStrength">1</span></div>
-            <div id="difficulty-label">Difficulty: <span id="currentDifficulty">Normal</span></div>
             <div id="balloon-strength-label">Balloon Strength: <span id="balloonStrength">1</span></div>
         </div>
         
@@ -582,7 +581,6 @@
             document.getElementById('enemies-left-label').innerHTML = t.enemiesLeft + ': <span id="enemiesLeft">' + (document.getElementById('enemiesLeft')?.textContent || '5') + '</span>';
             document.getElementById('gun-level-label').innerHTML = t.gunLevel + ': <span id="gunLevel">' + (document.getElementById('gunLevel')?.textContent || '1') + '</span>';
             document.getElementById('turret-strength-label').innerHTML = t.turretStrength + ': <span id="turretStrength">' + (document.getElementById('turretStrength')?.textContent || '1') + '</span>';
-            document.getElementById('difficulty-label').innerHTML = t.difficulty + ': <span id="currentDifficulty">' + (document.getElementById('currentDifficulty')?.textContent || 'Normal') + '</span>';
             document.getElementById('balloon-strength-label').innerHTML = t.balloonStrength + ': <span id="balloonStrength">' + (document.getElementById('balloonStrength')?.textContent || '1') + '</span>';
             document.getElementById('final-coins-label').innerHTML = t.finalCoins + ': <span id="finalCoins">' + (document.getElementById('finalCoins')?.textContent || '0') + '</span>';
             document.getElementById('waves-survived-label').innerHTML = t.wavesSurvived + ': <span id="finalWave">' + (document.getElementById('finalWave')?.textContent || '0') + '</span>';
@@ -608,8 +606,6 @@
         
         function startGame(difficulty) {
             selectedDifficulty = difficulty;
-            document.getElementById('currentDifficulty').textContent = 
-                difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
             document.getElementById('difficultyPopup').style.display = 'none';
             game = new Game();
         }
@@ -1341,9 +1337,6 @@
                     btn.classList.remove('selected');
                 });
                 document.getElementById(difficulty + 'Btn').classList.add('selected');
-                
-                document.getElementById('currentDifficulty').textContent = 
-                    difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
                 
                 this.hideDifficultyMenu();
                 
@@ -2867,8 +2860,6 @@
                 document.getElementById('wave').textContent = this.wave;
                 document.getElementById('gunLevel').textContent = this.player.gunLevel;
                 document.getElementById('turretStrength').textContent = this.turretStrength;
-                document.getElementById('currentDifficulty').textContent = 
-                    this.difficulty.charAt(0).toUpperCase() + this.difficulty.slice(1);
                 
                 // Update balloon strength indicator
                 const balloonStrength = 1 + Math.floor(this.wave / 10);
