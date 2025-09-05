@@ -59,5 +59,5 @@ window.translations.fr = {
     clickToPlaceTurret: "Cliquez sur la ligne rouge pour placer la tourelle",
 
     // Credits
-    creditLabel: "Créé par Vlad Alexa - ThatGuyFrom89"
+    creditLabel: "Créé par Vlad Alexa - thatguyfrom89.blogspot.com"
 };

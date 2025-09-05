@@ -59,5 +59,5 @@ window.translations.en = {
     clickToPlaceTurret: "Click on the red line to place turret",
 
     // Credits
-    creditLabel: "Created by Vlad Alexa - ThatGuyFrom89"
+    creditLabel: "Created by Vlad Alexa - thatguyfrom89.blogspot.com"
 };

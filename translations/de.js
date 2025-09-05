@@ -59,5 +59,5 @@ window.translations.de = {
     clickToPlaceTurret: "Klicken Sie auf die rote Linie, um den Turm zu platzieren",
 
     // Credits
-    creditLabel: "Erstellt von Vlad Alexa - ThatGuyFrom89"
+    creditLabel: "Erstellt von Vlad Alexa - thatguyfrom89.blogspot.com"
 };
