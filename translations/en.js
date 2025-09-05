@@ -56,5 +56,8 @@ window.translations.en = {
     turretLabel: "T{{number}}",
     
     // Instructions
-    clickToPlaceTurret: "Click on the red line to place turret"
+    clickToPlaceTurret: "Click on the red line to place turret",
+
+    // Credits
+    creditLabel: "Created by Vlad Alexa - ThatGuyFrom89"
 };

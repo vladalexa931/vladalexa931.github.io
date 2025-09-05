@@ -56,5 +56,8 @@ window.translations.ro = {
     turretLabel: "T{{number}}",
     
     // Instructions
-    clickToPlaceTurret: "Apasă pe linia roșie pentru a plasa turela"
+    clickToPlaceTurret: "Apasă pe linia roșie pentru a plasa turela",
+
+    // Credits
+    creditLabel: "Creat de Vlad Alexa - ThatGuyFrom89"
 };

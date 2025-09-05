@@ -56,5 +56,8 @@ window.translations.de = {
     turretLabel: "T{{number}}",
     
     // Instructions
-    clickToPlaceTurret: "Klicken Sie auf die rote Linie, um den Turm zu platzieren"
+    clickToPlaceTurret: "Klicken Sie auf die rote Linie, um den Turm zu platzieren",
+
+    // Credits
+    creditLabel: "Erstellt von Vlad Alexa - ThatGuyFrom89"
 };

@@ -394,6 +394,20 @@
             top: 50%;
             transform: translateY(-50%);
         }
+
+        .credit-label {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            font-size: 14px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
+            z-index: 50;
+            pointer-events: none;
+            user-select: none;
+            opacity: 0.8;
+        }
     </style>
     <!-- Translation files -->
     <script src="translations/en.js"></script>
@@ -505,6 +519,8 @@
             <p id="waves-survived-label">Waves Survived: <span id="finalWave">0</span></p>
             <button class="restart-btn" id="restartBtn">Play Again</button>
         </div>
+
+        <div class="credit-label" id="creditLabel">Created by Vlad Alexa - ThatGuyFrom89</div>
     </div>
     <script>
         // Translation system - always start with English unless there is a setting persisted in the local storage.
@@ -590,6 +606,9 @@
             document.getElementById('house-cost-label').innerHTML = t.cost + ': <span id="houseCost">' + (document.getElementById('houseCost')?.textContent || '30') + '</span>';
             document.getElementById('turret-cost-label').innerHTML = t.cost + ': <span id="turretCost">' + (document.getElementById('turretCost')?.textContent || '100') + '</span>';
             document.getElementById('repair-cost-label').innerHTML = t.cost + ': <span id="repairCost">' + (document.getElementById('repairCost')?.textContent || '20') + '</span>';
+
+            // Update credit label
+            document.getElementById('creditLabel').textContent = t.creditLabel;
         }
         
         let selectedDifficulty = 'normal';
