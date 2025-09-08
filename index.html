@@ -1478,69 +1478,55 @@
             }
             
             drawHouse() {
-                // 3D House walls with gradient
+                // Colorful house walls with bright gradient
                 const wallGradient = this.ctx.createLinearGradient(
                     this.house.x, this.house.y,
                     this.house.x, this.house.y + this.house.height
                 );
-                wallGradient.addColorStop(0, '#A0522D');
-                wallGradient.addColorStop(0.5, '#8B4513');
-                wallGradient.addColorStop(1, '#654321');
+                wallGradient.addColorStop(0, '#FFE4B5');  // Peach/cream top
+                wallGradient.addColorStop(0.5, '#FFDAB9'); // Lighter peach
+                wallGradient.addColorStop(1, '#FFB6C1');   // Light pink bottom
                 
                 this.ctx.fillStyle = wallGradient;
                 this.ctx.fillRect(this.house.x, this.house.y, this.house.width, this.house.height);
                 
-                // Add wood texture lines
-                this.ctx.strokeStyle = 'rgba(101, 67, 33, 0.3)';
-                this.ctx.lineWidth = 1;
-                for (let i = 0; i < this.house.width; i += 15) {
-                    this.ctx.beginPath();
-                    this.ctx.moveTo(this.house.x + i, this.house.y);
-                    this.ctx.lineTo(this.house.x + i + 5, this.house.y + this.house.height);
-                    this.ctx.stroke();
+                // Add polka dots pattern for childish look
+                this.ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+                for (let x = 0; x < this.house.width; x += 30) {
+                    for (let y = 0; y < this.house.height; y += 30) {
+                        this.ctx.beginPath();
+                        this.ctx.arc(this.house.x + x + 15, this.house.y + y + 15, 5, 0, Math.PI * 2);
+                        this.ctx.fill();
+                    }
                 }
                 
-                // 3D Roof with gradient and shadows
+                // Colorful roof with bright red gradient
                 const roofGradient = this.ctx.createLinearGradient(
-                    this.house.x + this.house.width / 2, this.house.y - 60,
+                    this.house.x + this.house.width / 2, this.house.y - 65,
                     this.house.x + this.house.width / 2, this.house.y
                 );
-                roofGradient.addColorStop(0, '#8B4513');
-                roofGradient.addColorStop(0.5, '#654321');
-                roofGradient.addColorStop(1, '#4A2C17');
+                roofGradient.addColorStop(0, '#FF6B6B');  // Bright red top
+                roofGradient.addColorStop(0.5, '#FF5252'); // Medium red
+                roofGradient.addColorStop(1, '#D32F2F');   // Darker red bottom
                 
                 this.ctx.fillStyle = roofGradient;
                 this.ctx.beginPath();
-                this.ctx.moveTo(this.house.x - 25, this.house.y);
-                this.ctx.lineTo(this.house.x + this.house.width + 25, this.house.y);
-                this.ctx.lineTo(this.house.x + this.house.width / 2, this.house.y - 65);
+                this.ctx.moveTo(this.house.x - 30, this.house.y);
+                this.ctx.lineTo(this.house.x + this.house.width + 30, this.house.y);
+                this.ctx.lineTo(this.house.x + this.house.width / 2, this.house.y - 70);
                 this.ctx.closePath();
                 this.ctx.fill();
                 
-                // Roof edge highlight
-                this.ctx.strokeStyle = 'rgba(139, 69, 19, 0.8)';
-                this.ctx.lineWidth = 3;
+                // Thick cartoon roof outline
+                this.ctx.strokeStyle = '#8B0000';
+                this.ctx.lineWidth = 4;
                 this.ctx.beginPath();
-                this.ctx.moveTo(this.house.x - 25, this.house.y);
-                this.ctx.lineTo(this.house.x + this.house.width / 2, this.house.y - 65);
-                this.ctx.lineTo(this.house.x + this.house.width + 25, this.house.y);
+                this.ctx.moveTo(this.house.x - 30, this.house.y);
+                this.ctx.lineTo(this.house.x + this.house.width / 2, this.house.y - 70);
+                this.ctx.lineTo(this.house.x + this.house.width + 30, this.house.y);
                 this.ctx.stroke();
                 
-                // Roof tiles effect
-                this.ctx.strokeStyle = 'rgba(0, 0, 0, 0.2)';
-                this.ctx.lineWidth = 1;
-                for (let i = 0; i < 5; i++) {
-                    const y = this.house.y - 15 * (i + 1);
-                    const width = (this.house.width + 50) * (1 - i * 0.2);
-                    const xStart = this.house.x + this.house.width / 2 - width / 2;
-                    
-                    this.ctx.beginPath();
-                    this.ctx.moveTo(xStart, y);
-                    this.ctx.lineTo(xStart + width, y);
-                    this.ctx.stroke();
-                }
-                
-                // 3D Windows with gradient glass and frames
+                // Cartoon windows with shutters
                 const windowPositions = [
                     { x: this.house.x + 20, y: this.house.y + 30 },
                     { x: this.house.x + this.house.width - 55, y: this.house.y + 30 },
@@ -1548,101 +1534,158 @@
                     { x: this.house.x + this.house.width - 55, y: this.house.y + 100 }
                 ];
                 
-                for (const window of windowPositions) {
-                    // Window frame
-                    this.ctx.fillStyle = '#4A2C17';
-                    this.ctx.fillRect(window.x - 3, window.y - 3, 41, 41);
+                windowPositions.forEach((window, index) => {
+                    // Window shutters (alternating colors)
+                    const shutterColor = index % 2 === 0 ? '#4CAF50' : '#2196F3';
+                    this.ctx.fillStyle = shutterColor;
+                    this.ctx.fillRect(window.x - 8, window.y - 2, 6, 39);
+                    this.ctx.fillRect(window.x + 37, window.y - 2, 6, 39);
                     
-                    // Glass with gradient
+                    // Window frame
+                    this.ctx.fillStyle = '#8B4513';
+                    this.ctx.fillRect(window.x - 2, window.y - 2, 39, 39);
+                    
+                    // Window glass with sky blue gradient
                     const glassGradient = this.ctx.createLinearGradient(
                         window.x, window.y,
-                        window.x + 35, window.y + 35
+                        window.x, window.y + 35
                     );
-                    glassGradient.addColorStop(0, '#B0E0E6');
-                    glassGradient.addColorStop(0.5, '#87CEEB');
-                    glassGradient.addColorStop(1, '#6495ED');
+                    glassGradient.addColorStop(0, '#87CEEB');
+                    glassGradient.addColorStop(1, '#E0F7FA');
                     
                     this.ctx.fillStyle = glassGradient;
                     this.ctx.fillRect(window.x, window.y, 35, 35);
                     
-                    // Window reflection
-                    this.ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
-                    this.ctx.beginPath();
-                    this.ctx.moveTo(window.x, window.y);
-                    this.ctx.lineTo(window.x + 15, window.y);
-                    this.ctx.lineTo(window.x, window.y + 15);
-                    this.ctx.closePath();
-                    this.ctx.fill();
-                    
-                    // Window cross bars
-                    this.ctx.strokeStyle = '#4A2C17';
-                    this.ctx.lineWidth = 2;
+                    // Cartoon window panes (cross pattern)
+                    this.ctx.strokeStyle = '#654321';
+                    this.ctx.lineWidth = 3;
                     this.ctx.beginPath();
                     this.ctx.moveTo(window.x + 17.5, window.y);
                     this.ctx.lineTo(window.x + 17.5, window.y + 35);
                     this.ctx.moveTo(window.x, window.y + 17.5);
                     this.ctx.lineTo(window.x + 35, window.y + 17.5);
                     this.ctx.stroke();
-                }
+                    
+                    // Cute curtains visible through window
+                    this.ctx.fillStyle = 'rgba(255, 192, 203, 0.5)';
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(window.x + 2, window.y + 2);
+                    this.ctx.quadraticCurveTo(window.x + 8, window.y + 8, window.x + 2, window.y + 20);
+                    this.ctx.fill();
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(window.x + 33, window.y + 2);
+                    this.ctx.quadraticCurveTo(window.x + 27, window.y + 8, window.x + 33, window.y + 20);
+                    this.ctx.fill();
+                });
                 
-                // 3D Door with gradient and details
-                const doorX = this.house.x + this.house.width / 2 - 18;
-                const doorY = this.house.y + this.house.height - 70;
+                // Colorful arched door
+                const doorX = this.house.x + this.house.width / 2 - 20;
+                const doorY = this.house.y + this.house.height - 75;
                 
-                // Door frame
-                this.ctx.fillStyle = '#3A2317';
-                this.ctx.fillRect(doorX - 3, doorY - 3, 42, 76);
-                
-                // Door with gradient
-                const doorGradient = this.ctx.createLinearGradient(
-                    doorX, doorY,
-                    doorX + 36, doorY
-                );
-                doorGradient.addColorStop(0, '#5A5A5A');
-                doorGradient.addColorStop(0.5, '#4A4A4A');
-                doorGradient.addColorStop(1, '#3A3A3A');
-                
-                this.ctx.fillStyle = doorGradient;
-                this.ctx.fillRect(doorX, doorY, 36, 70);
-                
-                // Door panels
-                this.ctx.strokeStyle = 'rgba(0, 0, 0, 0.3)';
-                this.ctx.lineWidth = 1;
-                this.ctx.strokeRect(doorX + 6, doorY + 8, 10, 20);
-                this.ctx.strokeRect(doorX + 20, doorY + 8, 10, 20);
-                this.ctx.strokeRect(doorX + 6, doorY + 35, 10, 25);
-                this.ctx.strokeRect(doorX + 20, doorY + 35, 10, 25);
-                
-                // Door knob with 3D effect
-                const knobGradient = this.ctx.createRadialGradient(
-                    doorX + 28, doorY + 35, 0,
-                    doorX + 28, doorY + 35, 3
-                );
-                knobGradient.addColorStop(0, '#FFD700');
-                knobGradient.addColorStop(0.7, '#FFA500');
-                knobGradient.addColorStop(1, '#B8860B');
-                
-                this.ctx.fillStyle = knobGradient;
+                // Door frame with rounded top
+                this.ctx.fillStyle = '#8B4513';
+                this.ctx.fillRect(doorX - 3, doorY, 46, 75);
                 this.ctx.beginPath();
-                this.ctx.arc(doorX + 28, doorY + 35, 3, 0, Math.PI * 2);
+                this.ctx.arc(doorX + 20, doorY, 23, Math.PI, 0, false);
                 this.ctx.fill();
                 
-                // Chimney
+                // Bright door
+                const doorGradient = this.ctx.createLinearGradient(
+                    doorX, doorY,
+                    doorX + 40, doorY
+                );
+                doorGradient.addColorStop(0, '#FFD700');  // Gold
+                doorGradient.addColorStop(0.5, '#FFA500'); // Orange
+                doorGradient.addColorStop(1, '#FFD700');   // Gold
+                
+                this.ctx.fillStyle = doorGradient;
+                this.ctx.fillRect(doorX, doorY + 5, 40, 70);
+                this.ctx.beginPath();
+                this.ctx.arc(doorX + 20, doorY + 5, 20, Math.PI, 0, false);
+                this.ctx.fill();
+                
+                // Door window (heart shape)
+                this.ctx.fillStyle = 'rgba(135, 206, 235, 0.7)';
+                const heartX = doorX + 20;
+                const heartY = doorY + 15;
+                this.ctx.beginPath();
+                this.ctx.moveTo(heartX, heartY + 5);
+                this.ctx.bezierCurveTo(heartX, heartY, heartX - 8, heartY, heartX - 8, heartY + 5);
+                this.ctx.bezierCurveTo(heartX - 8, heartY + 10, heartX, heartY + 15, heartX, heartY + 20);
+                this.ctx.bezierCurveTo(heartX, heartY + 15, heartX + 8, heartY + 10, heartX + 8, heartY + 5);
+                this.ctx.bezierCurveTo(heartX + 8, heartY, heartX, heartY, heartX, heartY + 5);
+                this.ctx.fill();
+                
+                // Round door knob
+                this.ctx.fillStyle = '#FF69B4';
+                this.ctx.beginPath();
+                this.ctx.arc(doorX + 32, doorY + 40, 4, 0, Math.PI * 2);
+                this.ctx.fill();
+                this.ctx.strokeStyle = '#FF1493';
+                this.ctx.lineWidth = 2;
+                this.ctx.stroke();
+                
+                // Colorful chimney with smoke
                 const chimneyX = this.house.x + this.house.width * 0.75;
                 const chimneyGradient = this.ctx.createLinearGradient(
-                    chimneyX, this.house.y - 30,
-                    chimneyX + 25, this.house.y - 30
+                    chimneyX, this.house.y - 45,
+                    chimneyX + 30, this.house.y - 45
                 );
-                chimneyGradient.addColorStop(0, '#8B4513');
-                chimneyGradient.addColorStop(0.5, '#654321');
-                chimneyGradient.addColorStop(1, '#4A2C17');
+                chimneyGradient.addColorStop(0, '#DC143C');
+                chimneyGradient.addColorStop(0.5, '#FF6347');
+                chimneyGradient.addColorStop(1, '#DC143C');
                 
                 this.ctx.fillStyle = chimneyGradient;
-                this.ctx.fillRect(chimneyX, this.house.y - 45, 25, 45);
+                this.ctx.fillRect(chimneyX, this.house.y - 50, 30, 50);
                 
-                // Chimney top
-                this.ctx.fillStyle = '#3A2317';
-                this.ctx.fillRect(chimneyX - 3, this.house.y - 48, 31, 5);
+                // Chimney top with stripes
+                this.ctx.fillStyle = '#8B0000';
+                this.ctx.fillRect(chimneyX - 4, this.house.y - 54, 38, 8);
+                
+                // Add smoke puffs
+                const time = Date.now() / 1000;
+                for (let i = 0; i < 3; i++) {
+                    const smokeY = this.house.y - 54 - (i * 15) - (time % 3) * 10;
+                    const smokeX = chimneyX + 15 + Math.sin(time + i) * 5;
+                    const smokeSize = 8 + i * 2;
+                    
+                    this.ctx.fillStyle = `rgba(200, 200, 200, ${0.5 - i * 0.15})`;
+                    this.ctx.beginPath();
+                    this.ctx.arc(smokeX, smokeY, smokeSize, 0, Math.PI * 2);
+                    this.ctx.fill();
+                }
+                
+                // Add decorative flowers around house base
+                const flowerColors = ['#FF69B4', '#FFD700', '#00CED1', '#FF6347', '#9370DB'];
+                for (let i = 0; i < 8; i++) {
+                    const flowerX = this.house.x - 10 + (i * (this.house.width + 20) / 7);
+                    const flowerY = this.house.y + this.house.height - 5;
+                    
+                    // Stem
+                    this.ctx.strokeStyle = '#228B22';
+                    this.ctx.lineWidth = 2;
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(flowerX, flowerY);
+                    this.ctx.lineTo(flowerX, flowerY - 15);
+                    this.ctx.stroke();
+                    
+                    // Flower petals
+                    this.ctx.fillStyle = flowerColors[i % flowerColors.length];
+                    for (let j = 0; j < 5; j++) {
+                        const angle = (j * Math.PI * 2) / 5;
+                        const petalX = flowerX + Math.cos(angle) * 5;
+                        const petalY = flowerY - 15 + Math.sin(angle) * 5;
+                        this.ctx.beginPath();
+                        this.ctx.arc(petalX, petalY, 3, 0, Math.PI * 2);
+                        this.ctx.fill();
+                    }
+                    
+                    // Flower center
+                    this.ctx.fillStyle = '#FFFF00';
+                    this.ctx.beginPath();
+                    this.ctx.arc(flowerX, flowerY - 15, 2, 0, Math.PI * 2);
+                    this.ctx.fill();
+                }
                 
                 // HP Bar with gradient
                 const hpBarWidth = this.house.width;
