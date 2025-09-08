@@ -702,7 +702,7 @@
                 
                 // Always use full viewport for better responsiveness
                 const canvasWidth = viewportWidth;
-                const canvasHeight = viewportHeight;
+                const canvasHeight = viewportHeight - (viewportHeight * 0.1);
                 
                 // Set canvas dimensions (internal resolution)
                 this.canvas.width = canvasWidth;
