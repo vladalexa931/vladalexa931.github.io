@@ -505,7 +505,7 @@
             <div id="balloon-strength-label">Balloon Strength: <span id="balloonStrength">1</span></div>
         </div>
         
-        <div class="game-buttons">
+        <div class="game-buttons" id="gameButtons">
             <button id="pauseBtn">Pause</button>
             <button id="difficultyBtn">Difficulty</button>
             <!-- <button id="donateBtn">Donate ❤️</button> -->
@@ -742,6 +742,15 @@
                     this.wall.width = 25;
                     this.wall.height = this.height * 0.30;
                 }
+                
+                // Position game buttons to align with house/wall bottom
+                const gameButtons = document.getElementById('gameButtons');
+                if (gameButtons && this.wall) {
+                    // Wall bottom is at wall.y + wall.height
+                    const wallBottom = this.wall.y + this.wall.height;
+                    // Convert canvas coordinates to screen pixels and add some padding
+                    gameButtons.style.bottom = (this.height - wallBottom + 20) + 'px';
+                }
             }
             
             updateDynamicTranslations() {
@@ -820,6 +829,9 @@
                     turret: 75,
                     repair: 20
                 };
+                
+                // Position UI elements based on game elements
+                this.repositionGameElements();
                 
                 this.startWave();
             }
