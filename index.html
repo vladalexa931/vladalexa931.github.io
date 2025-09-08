@@ -31,17 +31,19 @@
         
         .game-container {
             position: relative;
-            width: 100%;
-            height: 100%;
+            width: 100vw;
+            height: 100vh;
             background: linear-gradient(to bottom, #87CEEB 60%, #4A6741 60%);
             overflow: hidden;
             cursor: crosshair;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
         
         canvas {
-            position: absolute;
-            top: 0;
-            left: 0;
+            position: relative;
+            display: block;
             image-rendering: auto;
             image-rendering: crisp-edges;
             image-rendering: pixelated;
@@ -484,7 +486,7 @@
 				}
 				}).render('#donate-button');
 				</script>
-			</div>
+            </div>
         </div>
         
         <div class="ui">
@@ -722,17 +724,11 @@
                 this.width = canvasWidth;
                 this.height = canvasHeight;
                 
-                // Center the canvas
+                // Set canvas display size
                 this.canvas.style.width = canvasWidth + 'px';
                 this.canvas.style.height = canvasHeight + 'px';
-                this.canvas.style.left = ((viewportWidth - canvasWidth) / 2) + 'px';
-                this.canvas.style.top = ((viewportHeight - canvasHeight) / 2) + 'px';
                 
-                // Update game container dimensions
-                this.gameContainer.style.width = canvasWidth + 'px';
-                this.gameContainer.style.height = canvasHeight + 'px';
-                this.gameContainer.style.left = ((viewportWidth - canvasWidth) / 2) + 'px';
-                this.gameContainer.style.top = ((viewportHeight - canvasHeight) / 2) + 'px';
+                // No need to manually position - flexbox handles centering
             }
             
             repositionGameElements() {
