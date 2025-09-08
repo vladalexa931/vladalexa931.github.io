@@ -1492,7 +1492,7 @@
                 
                 // Add polka dots pattern for childish look
                 this.ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
-                for (let x = 0; x < this.house.width; x += 30) {
+                for (let x = 0; x < this.house.width - 30; x += 30) {
                     for (let y = 0; y < this.house.height; y += 30) {
                         this.ctx.beginPath();
                         this.ctx.arc(this.house.x + x + 15, this.house.y + y + 15, 5, 0, Math.PI * 2);
