@@ -946,7 +946,6 @@
                 
                 document.getElementById('pauseBtn').addEventListener('click', () => this.togglePause());
                 document.getElementById('difficultyBtn').addEventListener('click', () => this.showDifficultyMenu());
-                // document.getElementById('donateBtn').addEventListener('click', () => this.showDonateMessage());
                 
                 document.getElementById('easyBtn').addEventListener('click', () => this.setDifficulty('easy'));
                 document.getElementById('normalBtn').addEventListener('click', () => this.setDifficulty('normal'));
@@ -1483,10 +1482,6 @@
                 if (this.gameRunning && !this.waveActive && !shopOpen) {
                     this.startWave();
                 }
-            }
-            
-            showDonateMessage() {
-                alert('Thank you for your interest in supporting the game!\n\nThis feature would connect to a donation platform in a real game.');
             }
             
             render() {
