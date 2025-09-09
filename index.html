@@ -1047,7 +1047,7 @@
             }
             
             getEnemiesPerWave() {
-                const baseEnemies = 5 + this.wave * 2;
+                const baseEnemies = 10 + this.wave * 2;
                 switch (this.difficulty) {
                     case 'easy': return Math.max(3, Math.floor(baseEnemies * 0.7));
                     case 'normal': return baseEnemies;
